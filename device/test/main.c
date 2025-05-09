@@ -116,7 +116,8 @@ int main(void)
     // -- Note: This test sometimes takes a while to run
     //    because it uses schoolbook multiplication
     // -- Comment it out unless you need to test it
-    // test_poly_mult_ntt(n, nprimes);
+    //!
+    test_poly_mult_ntt(n, nprimes);
 
     test_fft(n);
 
