@@ -15,7 +15,6 @@
 #include "uintops.h"  // mul_uint64
 #include "util_print.h"
 
-//extern ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q);
 
 /**
 Modular addition. Correctness: (op1 + op2) <= (2q - 1).
@@ -135,40 +134,45 @@ static inline ZZ cr_barrett_mul(ZZ a, ZZ b, const Modulus *st_q)
     return z;
 }
 
+//`extern ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q);
+
 static inline ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
 {
-    __asm [volatile] (
-    ; Load
-    ; x0 : a
-    ; x1 : b
-    ; x2 : st_q
-    "ldr x3, [%[st_q], #0]\n\t"    ; x3 = q
-    "ldr x4, [%[st_q], #4]\n\t"    ; x4 = const_ratio[0]
-    "ldr x5, [%[st_q], #8]\n\t"    ; x5 = const_ratio[1]
+    ZZ result;
+    __asm volatile (
+    // Load
+    // x0 : a
+    // x1 : b
+    // x2 : st_q
+    "ldr w3, [%[st_q], #0]\n\t"    // x3 = q
+    "ldr w4, [%[st_q], #4]\n\t"    // x4 = const_ratio[0]
+    "ldr w5, [%[st_q], #8]\n\t"    // x5 = const_ratio[1]
 
-    ;precompute
-    ;v = ((uint64_t)(st_q->const_ratio[0]) * b)>>32;
-    "mul x6, x4, %[b]\n\t"
+    //precompute
+    //v = ((uint64_t)(st_q->const_ratio[0]) * b)>>32;
+    "mul x6, x4, %[b]\n\t"          // x6 = v
     "lsr x6, x6, #32\n\t"
-    ;v += (st_q->const_ratio[1]) * b;
+    //v += (st_q->const_ratio[1]) * b;
     "madd x6, x5, %[b], x6\n\t"
 
-    ;mod mul
-    ;z = a * b;
-    "mul x7, %[a], %[b]\n\t"          ; x7 = z = a * b
-    ;t = ((uint64_t)a * v) >> 32;
-    "umulh x9, %[a], x6\n\t"    ;반올림 안됨
-    ;z = z - t*q;
+    //mod mul
+    //z = a * b;
+    "mul x7, %[a], %[b]\n\t"          // x7 = z = a * b
+    //t = ((uint64_t)a * v) >> 32;
+    "mul x9, %[a], x6\n\t"  //반올림 안됨   // x9 = t
+    "lsr x9, x9, #32\n\t"
+    //z = z - t*q;
     "msub x7, x9, x3, x7\n\t"
 
-    ;if(z >= q) z -= q;
-    "subs x10, x7, x3\n\t"     ; 언더플로우 발생시 cc(carry clear)가 0
-    "csel %[a], x10, x7, cc\n\t" ; cc가 1이면 x0=x8, 0이면 x0=x7
+    //if(z >= q) z -= q;
+    "subs x10, x7, x3\n\t"     // hs(unsigned higher or same)
+    "csel %[res], x10, x7, hs\n\t" // hs가 1이면 res=x10, 0이면 res=x7
    
-    : [result] "=r" (res)
-    : [a] "r" (a),  [b] "r" (b), [st_q] "r" (st_q)
+    : [res] "=r" (result)
+    : [a] "r" ((uint64_t)a),  [b] "r" ((uint64_t)b), [st_q] "r" (st_q)
+    : "x0","x3","x4","x5","x6","x7","x9","x10","cc","memory"
     );
-    return res;
+    return result;
 }
 
 /**
@@ -188,8 +192,8 @@ static inline ZZ mul_mod(ZZ op1, ZZ op2, const Modulus *q)
     // return barrett_reduce_wide(product, q);
 
     //! our
-    //return cr_barrett_mul(op1, op2, q);
-    return cr_barrett_mul_asm(op1, op2, q);
+    return cr_barrett_mul(op1, op2, q);
+    //return cr_barrett_mul_asm(op1, op2, q);
 }
 
 
