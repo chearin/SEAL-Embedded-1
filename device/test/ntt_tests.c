@@ -301,13 +301,18 @@ void test_poly_mult_ntt(size_t n, size_t nprimes)
                 default: break;
             }
             if (intt_mult_test)
+            {
                 //performance
                 uint64_t start = read_cntvct();
                 test_poly_mult_ntt_intt_helper(&parms, ntt_roots, intt_roots, sb_res, a, b);
                 uint64_t end = read_cntvct();
                 printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)(end - start));
+            
+            }
             else
+            {
                 test_poly_mult_ntt_only_helper(&parms, ntt_roots, sb_res, a, b);
+            }
         }
         if ((parms.curr_modulus_idx + 1) < parms.nprimes)
         {
