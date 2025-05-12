@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>  // memset
+#include <stdint.h>
 
 #include "intt.h"
 #include "ntt.h"
@@ -35,6 +36,12 @@
 #define INTT_TESTS_ROOTS_MEM 0
 #endif
 #endif
+
+static inline uint64_t read_cntvct(void) {
+    uint64_t c;
+    asm volatile("mrs %0, cntvct_el0" : "=r"(c));
+    return c;
+}
 
 // sb_res stores schoolbook results and must have 2n space
 // ntt_roots either has space for n or 2n roots, depending on ntt option chosen
@@ -294,7 +301,11 @@ void test_poly_mult_ntt(size_t n, size_t nprimes)
                 default: break;
             }
             if (intt_mult_test)
+                //performance
+                uint64_t start = read_cntvct();
                 test_poly_mult_ntt_intt_helper(&parms, ntt_roots, intt_roots, sb_res, a, b);
+                uint64_t end = read_cntvct();
+                printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)(end - start));
             else
                 test_poly_mult_ntt_only_helper(&parms, ntt_roots, sb_res, a, b);
         }

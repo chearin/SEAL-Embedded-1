@@ -7,6 +7,11 @@ cmake_minimum_required (VERSION 3.13)
 #                  Start of configuration section                   #
 #####################################################################
 
+# Apple‑as 대신 ARM GNU as를 사용하도록 지정
+set(CMAKE_ASM_COMPILER "/usr/bin/clang")
+set(CMAKE_C_COMPILER   "/usr/bin/clang")
+
+
 # -- 1. Local or on device
 option(SE_BUILD_LOCAL "Build for native instead of device" ON)
 
@@ -30,6 +35,7 @@ if(NOT SE_BUILD_LOCAL)
     endif()
 endif()
 
+ENABLE_LANGUAGE(ASM_MASM)
 project(SEAL_EMBEDDED VERSION 1.1.0 LANGUAGES C ASM)
 
 #################
@@ -83,6 +89,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         se_enable_cxx_compiler_flag_if_supported("-Wconversion")
         se_enable_cxx_compiler_flag_if_supported("-Wshadow")
         se_enable_cxx_compiler_flag_if_supported("-pedantic")
+        se_enable_cxx_compiler_flag_if_supported("-target arm64-apple-ios") # added
+        se_enable_cxx_compiler_flag_if_supported("-g") # added
     endif()
 endif()
 
@@ -214,7 +222,8 @@ if(SE_BUILD_LOCAL)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endif()
 
-set(SE_LIB_SOURCE_FILES ${SPHERE_M4_SRC_FILES})
+#set(SE_LIB_SOURCE_FILES ${SPHERE_M4_SRC_FILES})
+set(SE_LIB_SOURCE_FILES "")
 set(SE_BENCH_SOURCE_FILES ${SPHERE_M4_SRC_FILES})
 set(SE_TESTS_SOURCE_FILES ${SPHERE_M4_SRC_FILES})
 
@@ -225,6 +234,7 @@ add_subdirectory(test)
 set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
 
 # -- Set up the library
+message(STATUS "SE_LIB_SOURCE_FILES: ${SE_LIB_SOURCE_FILES}") # ok
 add_library(seal_embedded STATIC ${SE_LIB_SOURCE_FILES})
 target_include_directories(seal_embedded PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/lib>)
 target_include_directories(seal_embedded PUBLIC ${SE_ADAPTER_FILE_OUTPUT_DIR})
@@ -247,26 +257,26 @@ set_target_properties(seal_embedded PROPERTIES sealembedded seal_embedded-${SEAL
 if(SE_BUILD_TYPE STREQUAL "Bench")
     if(SE_BUILD_LOCAL)
         add_executable(seal_embedded_bench ${SE_BENCH_SOURCE_FILES})
-        target_link_libraries(seal_embedded_bench PRIVATE m gcc_s c seal_embedded)
+        target_link_libraries(seal_embedded_bench PRIVATE m  c seal_embedded)
     else()
         add_executable(${PROJECT_NAME} ${SE_BENCH_SOURCE_FILES})
         if(SE_BUILD_M4)
             target_link_libraries(${PROJECT_NAME} PRIVATE MT3620_M4_Driver c m seal_embedded)
         else()
-            target_link_libraries(${PROJECT_NAME} PRIVATE applibs gcc_s c curl seal_embedded)
+            target_link_libraries(${PROJECT_NAME} PRIVATE applibs  c curl seal_embedded)
         endif()
     endif()
 elseif(SE_BUILD_TYPE STREQUAL "Tests")
     if(SE_BUILD_LOCAL)
         add_executable(seal_embedded_tests ${SE_TESTS_SOURCE_FILES})
-        target_link_libraries(seal_embedded_tests PRIVATE m gcc_s c seal_embedded)
+        target_link_libraries(seal_embedded_tests PRIVATE m  c seal_embedded)
     else()
         add_executable(${PROJECT_NAME} ${SE_TESTS_SOURCE_FILES})
         if(SE_BUILD_M4)
             target_include_directories(${PROJECT_NAME} PUBLIC ${MT3620_M4_BSP_PATH}/printf)
             target_link_libraries(${PROJECT_NAME} PUBLIC MT3620_M4_Driver c m seal_embedded)
         else()
-            target_link_libraries(${PROJECT_NAME} PRIVATE applibs gcc_s c curl seal_embedded)
+            target_link_libraries(${PROJECT_NAME} PRIVATE applibs  c curl seal_embedded)
         endif()
     endif()
 else()

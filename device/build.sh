@@ -1,3 +1,4 @@
-cmake -S . -B build -DSE_BUILD_LOCAL=ON
-cmake --build build -j
+rm -rf build
+cmake -S . -B build -DSE_BUILD_LOCAL=ON -DCMAKE_BUILD_TYPE=Debug #-DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-elf-toolchain.cmake 
+cmake --build build --verbose
 ./build/bin/seal_embedded_tests # run tests locally

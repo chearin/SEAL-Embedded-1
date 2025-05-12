@@ -15,7 +15,6 @@
 #include "uintops.h"  // mul_uint64
 #include "util_print.h"
 
-
 /**
 Modular addition. Correctness: (op1 + op2) <= (2q - 1).
 
@@ -134,8 +133,16 @@ static inline ZZ cr_barrett_mul(ZZ a, ZZ b, const Modulus *st_q)
     return z;
 }
 
-//`extern ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q);
+/**
+Modular multiplication using Barrett reduction.
 
+@param[in] op1  Operand 1
+@param[in] op2  Operand 2
+@param[in] q    Modulus
+@returns        (op1 * op2) mod q
+*/
+
+//extern ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q);
 static inline ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
 {
     ZZ result;
@@ -175,15 +182,6 @@ static inline ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
     return result;
 }
 
-/**
-Modular multiplication using Barrett reduction.
-
-@param[in] op1  Operand 1
-@param[in] op2  Operand 2
-@param[in] q    Modulus
-@returns        (op1 * op2) mod q
-*/
-
 static inline ZZ mul_mod(ZZ op1, ZZ op2, const Modulus *q)
 {
     //! origin
@@ -192,8 +190,8 @@ static inline ZZ mul_mod(ZZ op1, ZZ op2, const Modulus *q)
     // return barrett_reduce_wide(product, q);
 
     //! our
-    return cr_barrett_mul(op1, op2, q);
-    //return cr_barrett_mul_asm(op1, op2, q);
+    //return cr_barrett_mul(op1, op2, q);
+    return cr_barrett_mul_asm(op1, op2, q);
 }
 
 
