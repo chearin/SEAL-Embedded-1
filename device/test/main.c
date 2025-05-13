@@ -111,13 +111,13 @@ int main(void)
 
     // test_add_mod();
     // test_neg_mod();
-    test_mul_mod();
+    //test_mul_mod();
 
     // -- Note: This test sometimes takes a while to run
     //    because it uses schoolbook multiplication
     
     // -- Comment it out unless you need to test it
-    //test_poly_mult_ntt(n, nprimes);
+    test_poly_mult_ntt(n, nprimes);
 
     // test_fft(n);
 

@@ -55,7 +55,7 @@ void test_mul_mod_helper(ZZ val1, ZZ val2, Modulus *modulus, ZZ res_exp)
     printf("---------------------------------\n");
     for (int i = 0; i < 2; i++)
     {
-        //performance   
+        //performance
         printf("( %" PRIuZZ " * %" PRIuZZ " ) %% %" PRIuZZ "\n", val1, val2, q);
         long long sum = 0;
         long long start = 0, end = 0;
