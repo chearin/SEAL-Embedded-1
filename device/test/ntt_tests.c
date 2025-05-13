@@ -303,10 +303,17 @@ void test_poly_mult_ntt(size_t n, size_t nprimes)
             if (intt_mult_test)
             {
                 //performance
-                uint64_t start = read_cntvct();
-                test_poly_mult_ntt_intt_helper(&parms, ntt_roots, intt_roots, sb_res, a, b);
-                uint64_t end = read_cntvct();
-                printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)(end - start));
+                long long sum = 0;
+                long long start = 0, end = 0;
+                for(int j = 0; j < 100000; j++)
+                {
+                    start = read_cntvct();
+                    test_poly_mult_ntt_intt_helper(&parms, ntt_roots, intt_roots, sb_res, a, b);
+                    end = read_cntvct();
+                    sum += (end - start);    
+                }
+                
+                printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/100000);
             
             }
             else

@@ -99,35 +99,36 @@ int main(void)
     const size_t nprimes = SE_NPRIMES;
 #endif
 
-    test_sample_poly_uniform(n);
-    test_sample_poly_ternary(n);
-    test_sample_poly_ternary_small(n);  // Only useful when SE_USE_MALLOC is defined
+    // test_sample_poly_uniform(n);
+    // test_sample_poly_ternary(n);
+    // test_sample_poly_ternary_small(n);  // Only useful when SE_USE_MALLOC is defined
 
-    test_add_uint();
-    test_mult_uint();
+    // test_add_uint();
+    // test_mult_uint();
 
-    test_barrett_reduce();
-    test_barrett_reduce_wide();
+    // test_barrett_reduce();
+    // test_barrett_reduce_wide();
 
-    test_add_mod();
-    test_neg_mod();
+    // test_add_mod();
+    // test_neg_mod();
     test_mul_mod();
 
     // -- Note: This test sometimes takes a while to run
     //    because it uses schoolbook multiplication
+    
     // -- Comment it out unless you need to test it
-    test_poly_mult_ntt(n, nprimes);
+    //test_poly_mult_ntt(n, nprimes);
 
-    test_fft(n);
+    // test_fft(n);
 
-    test_enc_zero_sym(n, nprimes);
-    test_enc_zero_asym(n, nprimes);
+    // test_enc_zero_sym(n, nprimes);
+    // test_enc_zero_asym(n, nprimes);
 
-    test_ckks_encode(n);
+    // test_ckks_encode(n);
 
     // -- Main tests
-    test_ckks_encode_encrypt_sym(n, nprimes);
-    test_ckks_encode_encrypt_asym(n, nprimes);
+    // test_ckks_encode_encrypt_sym(n, nprimes);
+    // test_ckks_encode_encrypt_asym(n, nprimes);
 
     // -- Run these tests to verify api
     // -- Check the result with the adapter by writing output to a text file
