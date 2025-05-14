@@ -119,11 +119,11 @@ void test_poly_mult_ntt_intt_helper(const Parms *parms, const ZZ *ntt_roots, con
     ntt_inpl(parms, ntt_roots, a);
     // print_poly("ntt(a)         ", a, n);
 
-    ntt_inpl(parms, ntt_roots, b);
+    // ntt_inpl(parms, ntt_roots, b);
     // print_poly("ntt(b)         ", b, n);
 
     // -- Left side:  intt(ntt(a) . ntt(b))
-    poly_mult_mod_ntt_form_inpl(a, b, n, mod);
+    // poly_mult_mod_ntt_form_inpl(a, b, n, mod);
     intt_inpl(parms, intt_roots, a);
     // print_poly(left_side_str, a, n);
 

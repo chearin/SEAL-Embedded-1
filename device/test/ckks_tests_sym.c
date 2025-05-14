@@ -21,6 +21,7 @@
 #include "sample.h"
 #include "test_common.h"
 #include "util_print.h"
+#include "m1cycles.h"
 
 #if !((defined(SE_ON_SPHERE_M4) || defined(SE_ON_NRF5)) && !defined(SE_ENCRYPT_TYPE_SYMMETRIC))
 /**
@@ -140,37 +141,50 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
         if (!encode_only)
         { ckks_sym_init(&parms, NULL, NULL, &shareable_prng, &prng, conj_vals_int); }
 
-        for (size_t i = 0; i < parms.nprimes; i++)
+        //performance
+        long long sum = 0;
+        long long start = 0, end = 0;
+        setup_rdtsc();
+
+        for(int j = 0; j < 1000; j++)
         {
-            print_zz("\n ***** Modulus", parms.curr_modulus->value);
+            start = rdtsc();
+            for (size_t i = 0; i < parms.nprimes; i++)
+            {
+                // print_zz("\n ***** Modulus", parms.curr_modulus->value);
 
-            // -- Per prime Encode + Encrypt
-            // print_poly_ternary("s", s, n, true);
-            // print_poly_ternary_full("s", s, n, true);
-            ckks_encode_encrypt_sym(&parms, conj_vals_int, NULL, &shareable_prng, s, ntt_pte,
-                                    ntt_roots, c0, c1, s_test_save, c1_test_save);
-            // print_poly_int64("conj_vals_int", conj_vals_int, n);
-            // print_poly_ternary("s", s, n, true);
-            // print_poly_ternary("s_save", s, n, false);
+                // -- Per prime Encode + Encrypt
+                // print_poly_ternary("s", s, n, true);
+                // print_poly_ternary_full("s", s, n, true);
+                ckks_encode_encrypt_sym(&parms, conj_vals_int, NULL, &shareable_prng, s, ntt_pte,
+                                        ntt_roots, c0, c1, s_test_save, c1_test_save);
+                // print_poly_int64("conj_vals_int", conj_vals_int, n);
+                // print_poly_ternary("s", s, n, true);
+                // print_poly_ternary("s_save", s, n, false);
 
-            // -- Check that decrypt gives back the pt+err and decode gives back v.
-            // -- Note: This will only decode if values is non-zero. Otherwise, will
-            //    just decrypt.
-            // -- Note: sizeof(max(ntt_roots, ifft_roots)) must be passed as temp memory
-            //    to undo ifft
-            bool s_test_save_small = false;
-            check_decode_decrypt_inpl(c0, c1_test_save, v, vlen, s_test_save, s_test_save_small,
-                                      ntt_pte, index_map, &parms, temp_test_mem);
+                // -- Check that decrypt gives back the pt+err and decode gives back v.
+                // -- Note: This will only decode if values is non-zero. Otherwise, will
+                //    just decrypt.
+                // -- Note: sizeof(max(ntt_roots, ifft_roots)) must be passed as temp memory
+                //    to undo ifft
+                bool s_test_save_small = false;
+                check_decode_decrypt_inpl(c0, c1_test_save, v, vlen, s_test_save, s_test_save_small,
+                                        ntt_pte, index_map, &parms, temp_test_mem);
 
 #ifdef SE_SK_PERSISTENT_ACROSS_PRIMES
-            // -- Decoding corrupted this, so load it back
-            load_sk(&parms, s);
+                // -- Decoding corrupted this, so load it back
+                load_sk(&parms, s);
 #endif
 
-            // -- Done checking this prime. Now try next prime if requested
-            bool ret = ckks_next_prime_sym(&parms, s);
-            se_assert(ret || (!ret && i + 1 == parms.nprimes));
+                // -- Done checking this prime. Now try next prime if requested
+                bool ret = ckks_next_prime_sym(&parms, s);
+                se_assert(ret || (!ret && i + 1 == parms.nprimes));
+            }
+        end = rdtsc();
+        sum += (end - start);    
         }
+                
+        printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/1000);
 
         // -- Can exit now if rlwe testing only
         if (!test_message) break;
