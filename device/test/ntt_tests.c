@@ -19,6 +19,7 @@
 #include "test_common.h"
 #include "uintmodarith.h"
 #include "util_print.h"
+#include "m1cycles.h"
 
 #ifndef SE_USE_MALLOC
 #ifdef SE_NTT_FAST
@@ -305,11 +306,13 @@ void test_poly_mult_ntt(size_t n, size_t nprimes)
                 //performance
                 long long sum = 0;
                 long long start = 0, end = 0;
+                setup_rdtsc();
+
                 for(int j = 0; j < 1000; j++)
                 {
-                    start = read_cntvct();
+                    start = rdtsc();
                     test_poly_mult_ntt_intt_helper(&parms, ntt_roots, intt_roots, sb_res, a, b);
-                    end = read_cntvct();
+                    end = rdtsc();
                     sum += (end - start);    
                 }
                 

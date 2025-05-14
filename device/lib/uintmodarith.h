@@ -185,13 +185,13 @@ static inline ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
 static inline ZZ mul_mod(ZZ op1, ZZ op2, const Modulus *q)
 {
     //! origin
-    // ZZ product[2];
-    // mul_uint_wide(op1, op2, product);
-    // return barrett_reduce_wide(product, q);
+    ZZ product[2];
+    mul_uint_wide(op1, op2, product);
+    return barrett_reduce_wide(product, q);
 
     //! our
     // return cr_barrett_mul(op1, op2, q);
-    return cr_barrett_mul_asm(op1, op2, q);
+    // return cr_barrett_mul_asm(op1, op2, q);
 }
 
 

@@ -60,14 +60,16 @@ void test_mul_mod_helper(ZZ val1, ZZ val2, Modulus *modulus, ZZ res_exp)
         long long sum = 0;
         long long start = 0, end = 0;
         ZZ res=0;
-        for(int j = 0; j < 100000; j++)
+        setup_rdtsc();
+        
+        for(int j = 0; j < 10000; j++)
         {
             start = rdtsc();
             res = mul_mod(val1, val2, modulus);
             end = rdtsc();
             sum += (end - start);    
         }
-        printf("\n\n\n\nmulmod Cycles: %llu\n\n\n\n", sum/100000);
+        printf("\n\n\n\nmulmod Cycles: %llu\n\n\n\n", sum/10000);
         
         print_zz("Result         ", res);
         print_zz("Result expected", res_exp);
