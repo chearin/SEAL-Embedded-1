@@ -13,11 +13,6 @@
 #include "util_print.h"
 #include "m1cycles.h"
 
-static inline uint64_t read_cntvct(void) {
-    uint64_t c;
-    asm volatile("mrs %0, cntvct_el0" : "=r"(c));
-    return c;
-}
 
 // -- Note: This uses % to check
 void test_add_mod_helper(ZZ val1, ZZ val2, Modulus *modulus, ZZ res_exp)

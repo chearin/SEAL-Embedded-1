@@ -38,12 +38,6 @@
 #endif
 #endif
 
-static inline uint64_t read_cntvct(void) {
-    uint64_t c;
-    asm volatile("mrs %0, cntvct_el0" : "=r"(c));
-    return c;
-}
-
 // sb_res stores schoolbook results and must have 2n space
 // ntt_roots either has space for n or 2n roots, depending on ntt option chosen
 void test_poly_mult_ntt_only_helper(const Parms *parms, const ZZ *ntt_roots, ZZ *sb_res, ZZ *a,
