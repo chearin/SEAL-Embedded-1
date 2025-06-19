@@ -99,6 +99,7 @@ int main(void)
     const size_t nprimes = SE_NPRIMES;
 #endif
 
+    //! 기능 테스트
     // test_sample_poly_uniform(n);
     // test_sample_poly_ternary(n);
     // test_sample_poly_ternary_small(n);  // Only useful when SE_USE_MALLOC is defined
@@ -113,10 +114,10 @@ int main(void)
     // test_neg_mod();
     // test_mul_mod();
 
-    // -- Note: This test sometimes takes a while to run
+    //! -- Note: This test sometimes takes a while to run
     //    because it uses schoolbook multiplication
     
-    // -- Comment it out unless you need to test it
+    //! -- Comment it out unless you need to test it
     // test_poly_mult_ntt(n, nprimes);
 
     // test_fft(n);
@@ -126,15 +127,15 @@ int main(void)
 
     // test_ckks_encode(n);
 
-    // -- Main tests
-    test_ckks_encode_encrypt_sym(n, nprimes);
+    //! -- Main tests
+    // test_ckks_encode_encrypt_sym(n, nprimes);
     // test_ckks_encode_encrypt_asym(n, nprimes);
 
     // -- Run these tests to verify api
     // -- Check the result with the adapter by writing output to a text file
     //    and passing that to the adapter "verify ciphertexts" functionality
-    // test_ckks_api_sym();
-    // test_ckks_api_asym();
+    test_ckks_api_sym(); //* #1
+    // test_ckks_api_asym(); //* #2
 
     // test_network_basic();
     // test_network();
