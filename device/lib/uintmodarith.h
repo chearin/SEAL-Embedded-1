@@ -15,6 +15,7 @@
 #include "uintops.h"  // mul_uint64
 #include "util_print.h"
 
+
 /**
 Modular addition. Correctness: (op1 + op2) <= (2q - 1).
 
@@ -133,16 +134,8 @@ static inline ZZ cr_barrett_mul(ZZ a, ZZ b, const Modulus *st_q)
     return z;
 }
 
-/**
-Modular multiplication using Barrett reduction.
+//`extern ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q);
 
-@param[in] op1  Operand 1
-@param[in] op2  Operand 2
-@param[in] q    Modulus
-@returns        (op1 * op2) mod q
-*/
-
-//extern ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q);
 static inline ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
 {
     ZZ result;
@@ -182,16 +175,45 @@ static inline ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
     return result;
 }
 
+static inline ZZ cr_Mont_mul(ZZ a, ZZ b, const Modulus *st_q)
+{
+    ZZ z, v, t, q;
+    q = st_q->value;
+    //v = ((((uint64_t)b * (1LL << 32)+ q/2) / q));
+    //v = ((((uint64_t)b * (1LL << 32)) / q));    // 반올림 안해도 통과함
+    v = ((uint64_t)(st_q->const_ratio[0]) * b)>>32;
+    v += (st_q->const_ratio[1]) * b;
+    //v = (v + 1)>>1;    // *1/2 적용한 값(반올림해야함) -> sqrdmulh 쓰면 *2 되니까
+    
+    z = a * b;
+    //v *= 2; // sqrdmulh로 *2
+    //t = ((uint64_t)a * v + (1 << 31)) >> 32;  // 반올림 안해도 통과함
+    t = ((uint64_t)a * v) >> 32;
+    z = z - t*q;
+
+    if(z >= q) z -= q;
+    return z;
+}
+
+/**
+Modular multiplication using Barrett reduction.
+
+@param[in] op1  Operand 1
+@param[in] op2  Operand 2
+@param[in] q    Modulus
+@returns        (op1 * op2) mod q
+*/
+
 static inline ZZ mul_mod(ZZ op1, ZZ op2, const Modulus *q)
 {
     //! origin
-    ZZ product[2];
-    mul_uint_wide(op1, op2, product);
-    return barrett_reduce_wide(product, q);
+    // ZZ product[2];
+    // mul_uint_wide(op1, op2, product);
+    // return barrett_reduce_wide(product, q);
 
     //! our
-    // return cr_barrett_mul(op1, op2, q);
-    // return cr_barrett_mul_asm(op1, op2, q);
+    return cr_barrett_mul(op1, op2, q);
+    //return cr_barrett_mul_asm(op1, op2, q);
 }
 
 
