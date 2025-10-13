@@ -120,7 +120,7 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
         if (test_message)
         {
             set_encode_encrypt_test(testnum, vlen, v);
-            print_poly_flpt("v        ", v, vlen);
+            // print_poly_flpt("v        ", v, vlen);
         }
 
         // -- Begin encode-encrypt sequence
@@ -146,7 +146,7 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
         long long start = 0, end = 0;
         setup_rdtsc();
 
-        for(int j = 0; j < 1000; j++)
+        for(int j = 0; j < 100; j++)
         {
             start = rdtsc();
             for (size_t i = 0; i < parms.nprimes; i++)
@@ -180,11 +180,11 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
                 bool ret = ckks_next_prime_sym(&parms, s);
                 se_assert(ret || (!ret && i + 1 == parms.nprimes));
             }
-        end = rdtsc();
-        sum += (end - start);    
+            end = rdtsc();
+            sum += (end - start);    
         }
                 
-        printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/1000);
+        printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/100);
 
         // -- Can exit now if rlwe testing only
         if (!test_message) break;
