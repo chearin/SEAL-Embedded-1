@@ -25,7 +25,8 @@ typedef struct Modulus
 
     // -- Note: SEAL const_ratio is size 3 to store the remainder,
     //    but we don't need the remainder so we can use a size 2 array
-
+    //! inv_q is -inv_q
+    ZZ 
     ZZ const_ratio[2];  // floor(2^64/q)
 } Modulus;
 

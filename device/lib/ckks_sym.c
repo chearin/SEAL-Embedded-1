@@ -263,7 +263,7 @@ void ckks_encode_encrypt_sym(const Parms *parms, const int64_t *conj_vals_int,
     // -- Note: Calling ntt_roots_initialize will do nothing if SE_NTT_OTF is defined
     ntt_roots_initialize(parms, ntt_roots);
     ntt_inpl(parms, ntt_roots, c0_s);
-#ifndef SE_DISABLE_TESTING_CAPABILITY
+#ifndef SE_DISABLE_TESTING_CAPABILITY 
     // -- Save ntt(reduced(s)) for later decryption
     // print_poly_ternary("s (ntt)", c0_s, parms->coeff_count, false);
     if (s_save) memcpy(s_save, c0_s, n * sizeof(c0_s[0]));

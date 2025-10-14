@@ -21,7 +21,6 @@
 #include "sample.h"
 #include "test_common.h"
 #include "util_print.h"
-#include "m1cycles.h"
 
 #if !((defined(SE_ON_SPHERE_M4) || defined(SE_ON_NRF5)) && !defined(SE_ENCRYPT_TYPE_SYMMETRIC))
 /**
@@ -140,18 +139,18 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
         // -- Sample error e. While sampling e, add it in place to the base message.
         if (!encode_only)
         { ckks_sym_init(&parms, NULL, NULL, &shareable_prng, &prng, conj_vals_int); }
-
+        
         //performance
         long long sum = 0;
         long long start = 0, end = 0;
-        setup_rdtsc();
+        //! setup_rdtsc();
 
-        for(int j = 0; j < 1000; j++)
+        for(int j = 0; j < 100; j++)
         {
-            start = rdtsc();
+            //! start = rdtsc();
             for (size_t i = 0; i < parms.nprimes; i++)
             {
-                // print_zz("\n ***** Modulus", parms.curr_modulus->value);
+                print_zz("\n ***** Modulus", parms.curr_modulus->value);
 
                 // -- Per prime Encode + Encrypt
                 // print_poly_ternary("s", s, n, true);
@@ -180,11 +179,12 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
                 bool ret = ckks_next_prime_sym(&parms, s);
                 se_assert(ret || (!ret && i + 1 == parms.nprimes));
             }
-        end = rdtsc();
-        sum += (end - start);    
+            //! end = rdtsc();
+            sum += (end - start);    
         }
                 
-        printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/1000);
+        printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/100);
+
 
         // -- Can exit now if rlwe testing only
         if (!test_message) break;

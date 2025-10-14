@@ -15,6 +15,7 @@
 #include "uintops.h"  // mul_uint64
 #include "util_print.h"
 
+
 /**
 Modular addition. Correctness: (op1 + op2) <= (2q - 1).
 
@@ -133,16 +134,8 @@ static inline ZZ cr_barrett_mul(ZZ a, ZZ b, const Modulus *st_q)
     return z;
 }
 
-/**
-Modular multiplication using Barrett reduction.
+//`extern ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q);
 
-@param[in] op1  Operand 1
-@param[in] op2  Operand 2
-@param[in] q    Modulus
-@returns        (op1 * op2) mod q
-*/
-
-//extern ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q);
 static inline ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
 {
     ZZ result;
@@ -182,16 +175,46 @@ static inline ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
     return result;
 }
 
+//todo montgomery domain 변환 함수 필요
+//todo mul_mod2 함수 만들어서 cr_Mont_mul 호출(ntt에서 lazy reduction할 때 사용)
+// cr_Mont_mul은 return 자료형 signed 32bit
+//todo Modulus 구조체에 inv_q(사전 계산 값) 추가
+
+static inline int32_t cr_Mont_mul(ZZ a, ZZ b, const Modulus *st_q)
+{
+    uint64_t z = 0;
+    ZZ k, c, q, iq;
+    q = st_q->value;
+    iq = st_q->inv_q;
+    
+    z = (uint64_t)a * b;
+    k = z * iq;
+    c = (z + k * q) >> 32;
+
+    //todo signed 범위로 매핑
+    if(c >= q) c -= q;
+    return c;
+}
+
+/**
+Modular multiplication using Barrett reduction.
+
+@param[in] op1  Operand 1
+@param[in] op2  Operand 2
+@param[in] q    Modulus
+@returns        (op1 * op2) mod q
+*/
+
 static inline ZZ mul_mod(ZZ op1, ZZ op2, const Modulus *q)
 {
     //! origin
-    ZZ product[2];
-    mul_uint_wide(op1, op2, product);
-    return barrett_reduce_wide(product, q);
+    // ZZ product[2];
+    // mul_uint_wide(op1, op2, product);
+    // return barrett_reduce_wide(product, q);
 
     //! our
-    // return cr_barrett_mul(op1, op2, q);
-    // return cr_barrett_mul_asm(op1, op2, q);
+    return cr_barrett_mul(op1, op2, q);
+    //return cr_barrett_mul_asm(op1, op2, q);
 }
 
 
