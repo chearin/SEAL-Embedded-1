@@ -27,6 +27,8 @@ typedef struct Modulus
     //    but we don't need the remainder so we can use a size 2 array
 
     ZZ const_ratio[2];  // floor(2^64/q)
+    ZZ inv_q;
+    ZZ R2;
 } Modulus;
 
 /**
@@ -38,7 +40,8 @@ const_ratio for modulus value has not been pre-computed by set_modulus' table.
 @param[in]  lw   Low word of const_ratio for 'q'
 @param[out] mod  Modulus object to set
 */
-void set_modulus_custom(const ZZ q, ZZ hw, ZZ lw, Modulus *mod);
+// void set_modulus_custom(const ZZ q, ZZ hw, ZZ lw, Modulus *mod);
+void set_modulus_custom(const ZZ q, ZZ hw, ZZ lw, ZZ m_invQ, ZZ r2, Modulus *mod);
 
 /**
 Sets up the modulus object for a particular modulus value. Implements const_ratio set as a table

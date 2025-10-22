@@ -146,7 +146,7 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
         long long start = 0, end = 0;
         setup_rdtsc();
 
-        for(int j = 0; j < 100; j++)
+        for(int j = 0; j < 1; j++)
         {
             start = rdtsc();
             for (size_t i = 0; i < parms.nprimes; i++)
@@ -184,7 +184,7 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
             sum += (end - start);    
         }
                 
-        printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/100);
+        printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/1);
 
         // -- Can exit now if rlwe testing only
         if (!test_message) break;

@@ -182,18 +182,66 @@ static inline ZZ cr_barrett_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
     return result;
 }
 
+//unsigned Montgomery multiplication
+static inline ZZ cr_Mont_mul_unsigned(ZZ a, ZZ b, const Modulus *st_q)
+{
+    uint64_t z = 0;
+    ZZ k, c, q, iq;
+    q = st_q->value;
+    iq = st_q->inv_q;
+    
+    z = (uint64_t)a * b;
+    k = z * iq;
+    c = (z + (uint64_t)k * q) >> 32;
+
+    //[0, q)
+    if(c >= q) c -= q;
+
+    return c;
+}
+
+//signed Montgomery multiplication
+static inline ZZsign cr_Mont_mul(ZZsign a, ZZsign b, const Modulus *st_q)
+{
+    int64_t z = 0;
+    ZZsign k, c;
+    ZZ q, iq;
+    q = st_q->value;
+    iq = st_q->inv_q;
+    
+    z = (int64_t)a * b;
+    k = (int64_t)(int32_t)z * iq;
+    c = (z + (int64_t)k * q) >> 32;
+
+    return c;
+}
+
 static inline ZZ mul_mod(ZZ op1, ZZ op2, const Modulus *q)
 {
     //! origin
-    ZZ product[2];
+    // ZZ product[2];
     // mul_uint_wide(op1, op2, product);
     // return barrett_reduce_wide(product, q);
 
     //! our
-    return cr_barrett_mul(op1, op2, q);
-    // return cr_barrett_mul_asm(op1, op2, q);
-}
+    // return cr_barrett_mul(op1, op2, q);
+    return cr_barrett_mul_asm(op1, op2, q);
 
+    //! % test
+    // return (uint64_t)op1 * op2 % q->value;
+    
+    // ZZ R2 = q->R2;
+    // ZZsign op11 = cr_Mont_mul(op1, R2, q);
+    // ZZsign op22 = cr_Mont_mul(op2, R2, q);
+    // ZZsign r = cr_Mont_mul(op11, op22, q);
+    // r = cr_Mont_mul(r, 1, q);
+    // if (r < 0) r += q->value;
+    // return r;
+}
+static inline ZZ mul_mod_mont(ZZ op1, ZZ op2, const Modulus *q)
+{
+    return cr_Mont_mul(op1, op2, q);
+}
 
 /**
 In-place modular multiplication using Barrett reduction.
