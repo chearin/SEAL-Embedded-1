@@ -217,55 +217,29 @@ static inline ZZsign cr_mont_mul(ZZsign a, ZZsign b, const Modulus *st_q)
     return c;
 }
 
-static inline ZZsign cr_mont_mul_asm(ZZ a, ZZ b, const Modulus *st_q)
+static inline ZZsign cr_mont_mul_asm(ZZsign a, ZZsign b, const Modulus *st_q)
 {
-    int64_t z = 0;
-    ZZsign k, c;
-    ZZ q, iq;
-    q = st_q->value;
-    iq = st_q->inv_q;
-    
-    z = (int64_t)a * b;
-    // k = (int64_t)(int32_t)z * iq;
-    k = (uint64_t)z * (uint64_t)iq;
-    c = (z + (int64_t)k * q) >> 32;
-
-    return c;
-
-
-    ZZ result;
+    ZZsign result;
     __asm volatile (
     // Load
     // x0 : a
     // x1 : b
     // x2 : st_q
     "ldr w3, [%[st_q], #0]\n\t"    // x3 = q
-    "ldr w4, [%[st_q], #4]\n\t"    // x4 = const_ratio[0]
-    "ldr w5, [%[st_q], #8]\n\t"    // x5 = const_ratio[1]
+    "ldr w4, [%[st_q], #12]\n\t"   // x4 = inv_q
+    "ldr w5, [%[st_q], #16]\n\t"   // x5 = R2
 
-    //precompute
-    //v = ((uint64_t)(st_q->const_ratio[0]) * b)>>32;
-    "mul x6, x4, %[b]\n\t"          // x6 = v
-    "lsr x6, x6, #32\n\t"
-    //v += (st_q->const_ratio[1]) * b;
-    "madd x6, x5, %[b], x6\n\t"
-
-    //mod mul
-    //z = a * b;
-    "mul x7, %[a], %[b]\n\t"          // x7 = z = a * b
-    //t = ((uint64_t)a * v) >> 32;
-    "mul x9, %[a], x6\n\t"  //반올림 안됨   // x9 = t
-    "lsr x9, x9, #32\n\t"
-    //z = z - t*q;
-    "msub x7, x9, x3, x7\n\t"
-
-    //if(z >= q) z -= q;
-    "subs x10, x7, x3\n\t"     // hs(unsigned higher or same)
-    "csel %[res], x10, x7, hs\n\t" // hs가 1이면 res=x10, 0이면 res=x7
+    //z = (int64_t)a * b;
+    "smull x6, %w[a], %w[b]\n\t"          // x6 = z
+    //k = (uint64_t)z * (uint64_t)iq;
+    "mul x7, x6, x4\n\t"          // x7 = k
+    //c = (z + (int64_t)k * q) >> 32;
+    "smaddl %[res], w7, w3, x6\n\t"
+    "lsr %[res], %[res], #32\n\t"
    
     : [res] "=r" (result)
-    : [a] "r" ((uint64_t)a),  [b] "r" ((uint64_t)b), [st_q] "r" (st_q)
-    : "x0","x3","x4","x5","x6","x7","x9","x10","cc","memory"
+    : [a] "r" ((int32_t)a),  [b] "r" ((int32_t)b), [st_q] "r" (st_q)
+    : "x0","x3","x4","x5","x6","x7","cc","memory"
     );
     return result;
 }
@@ -294,7 +268,8 @@ static inline ZZ mul_mod(ZZ op1, ZZ op2, const Modulus *q)
 }
 static inline ZZ mul_mod_mont(ZZ op1, ZZ op2, const Modulus *q)
 {
-    return cr_mont_mul(op1, op2, q);
+    // return cr_mont_mul(op1, op2, q);
+    return cr_mont_mul_asm(op1, op2, q);
 }
 
 /**
