@@ -54,7 +54,8 @@ void ntt_roots_initialize(const Parms *parms, ZZ *ntt_roots)
     // for (size_t i = 1; i < n; i++)
     // {
     //     ZZ s = ntt_roots[i];
-    //     s = (int64_t)s*((int64_t)1<<32) % (mod->value);
+    //     // s = (int64_t)s*((int64_t)1<<32) % (mod->value);
+    //     s = mul_mod_mont(s, (mod->R2), mod);
     //     ntt_roots[i] = s;
     //     power                      = mul_mod(power, root, mod);
     // }
@@ -209,7 +210,8 @@ void ntt_non_lazy_inpl_test(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
             se_assert(ntt_roots);
             ZZsign s = ntt_roots[h + j];
             // printf("s: %d ", s);
-            s = (int64_t)s*((int64_t)1<<32) % (mod->value);
+            // s = (int64_t)s*((int64_t)1<<32) % (mod->value);
+            s = mul_mod_mont(s, (mod->R2), mod);
 #endif
             // -- The Harvey butterfly. Assume val1, val2 in [0, 2p)
             // -- Return vec[k], vec[k+tt] in [0, 4p)S
@@ -268,7 +270,8 @@ void ntt_non_lazy_inpl_test_v1(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
             se_assert(ntt_roots);
             ZZsign s = ntt_roots[h + j];
             // precompute montgomery domain zetas : (s * 2^32) % Q
-            s = (int64_t)s*((int64_t)1<<32) % (mod->value);
+            // s = (int64_t)s*((int64_t)1<<32) % (mod->value);
+            s = mul_mod_mont(s, (mod->R2), mod);
 #endif
             for (size_t k = kstart; k < (kstart + tt); k++)  // pairs
             {
@@ -328,7 +331,7 @@ void ntt_non_lazy_inpl_test_v1(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
         vec[i] = signed_vec[i];
     }
 }
-void ntt_non_lazy_inpl_test_v2(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
+void cr_signed_ntt_lazy_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
 {
     se_assert(parms && parms->curr_modulus && vec);
     size_t n     = parms->coeff_count;
@@ -366,7 +369,8 @@ void ntt_non_lazy_inpl_test_v2(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
                 se_assert(ntt_roots);
                 ZZsign s = ntt_roots[h + j];
                 // precompute montgomery domain zetas : (s * 2^32) % Q
-                s = (int64_t)s*((int64_t)1<<32) % (mod->value);
+                // s = (int64_t)s*((int64_t)1<<32) % (mod->value);
+                s = mul_mod_mont(s, (mod->R2), mod);
 #endif
                 for (size_t k = kstart; k < (kstart + tt); k++)  // pairs
                 {
@@ -452,7 +456,7 @@ void ntt_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
     // ntt_non_lazy_inpl(parms, ntt_roots, vec);
     // ntt_non_lazy_inpl_test(parms, ntt_roots, vec);
     // ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
-    ntt_non_lazy_inpl_test_v2(parms, ntt_roots, vec);
+    cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
 #endif
 }
 

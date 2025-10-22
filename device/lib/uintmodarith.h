@@ -227,8 +227,7 @@ static inline ZZsign cr_mont_mul_asm(ZZsign a, ZZsign b, const Modulus *st_q)
     // x2 : st_q
     "ldr w3, [%[st_q], #0]\n\t"    // x3 = q
     "ldr w4, [%[st_q], #12]\n\t"   // x4 = inv_q
-    "ldr w5, [%[st_q], #16]\n\t"   // x5 = R2
-
+    
     //z = (int64_t)a * b;
     "smull x6, %w[a], %w[b]\n\t"          // x6 = z
     //k = (uint64_t)z * (uint64_t)iq;
@@ -239,7 +238,7 @@ static inline ZZsign cr_mont_mul_asm(ZZsign a, ZZsign b, const Modulus *st_q)
    
     : [res] "=r" (result)
     : [a] "r" ((int32_t)a),  [b] "r" ((int32_t)b), [st_q] "r" (st_q)
-    : "x0","x3","x4","x5","x6","x7","cc","memory"
+    : "x0","x3","x4","x6","x7","cc","memory"
     );
     return result;
 }
@@ -266,10 +265,15 @@ static inline ZZ mul_mod(ZZ op1, ZZ op2, const Modulus *q)
     // if (r < 0) r += q->value;
     // return r;
 }
-static inline ZZ mul_mod_mont(ZZ op1, ZZ op2, const Modulus *q)
+static inline ZZsign mul_mod_mont(ZZ op1, ZZ op2, const Modulus *q)
 {
     // return cr_mont_mul(op1, op2, q);
     return cr_mont_mul_asm(op1, op2, q);
+}
+
+static inline ZZ unsigned_mul_mod_mont(ZZ op1, ZZ op2, const Modulus *q)
+{
+    return cr_mont_mul_unsigned(op1, op2, q);
 }
 
 /**
