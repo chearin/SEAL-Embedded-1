@@ -353,7 +353,6 @@ void ntt_non_lazy_inpl_test_v2(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
         for (size_t i = 0; i < max_n; i++)
         {
             signed_vec[i] = (ZZsign)vec[i];  // changes from unsigned to signed representation
-            // signed_vec[i] = i;  // changes from unsigned to signed representation
         }
 
         for (size_t i = 0; i < logn; i++, h *= 2, tt /= 2)  // rounds
@@ -373,20 +372,24 @@ void ntt_non_lazy_inpl_test_v2(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
                 {
                     u = signed_vec[k];
                     v = mul_mod_mont(signed_vec[k + tt], s, mod);
-                    // signed_vec[k] = (u + v)%(mod->value);
-                    // signed_vec[k + tt] = (u - v)%(mod->value);
+                    //! lazy reduction
+                    signed_vec[k] = (u + v);
+                    signed_vec[k + tt] = (u - v);
+
+                    //! non-lazy reduction
                     // signed_vec[k] = ((u + v) + (mod->value)) % (mod->value);
                     // signed_vec[k + tt] = ((u - v) + (mod->value)) % (mod->value);
 
-                    signed_vec[k] = (u + v);
-                    signed_vec[k + tt] = (u - v);
+                    //! 마이너스 일 때 % 계산 제대로 안됨 (밑에 안되는 코드)
+                    // signed_vec[k] = (u + v)%(mod->value);
+                    // signed_vec[k + tt] = (u - v)%(mod->value);
                 }
             }
         }
     }
     else  // 30-bit prime
     {
-        printf("\n\n\n\n\n\n\n\n\n\n\n30-bit use!!!!\n\n\n\n\n\n\n\n\n\n\n");
+        printf("\n\n\n\n\n\n\n\n\n\n\n30-bit Q use\n\n\n\n\n\n\n\n\n\n\n");
         ZZ u, v;
         // todo unsigned representation으로 유지 + lazy reduction 안하고.
         for (size_t i = 0; i < logn; i++, h *= 2, tt /= 2)  // rounds
@@ -419,7 +422,7 @@ void ntt_non_lazy_inpl_test_v2(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
             // todo youngbeom
             // signed_vec[i] += ((ZZ)(signed_vec[i] < 0) * 10 * (mod->value));
             // signed_vec[i] = signed_vec[i] % (mod->value);  // todo chaerin 나중에 single word barrett reduce로 바꾸기
-            signed_vec[i] = mul_mod_mont(signed_vec[i], 6553568, mod);  //6553568 : R omd Q
+            signed_vec[i] = mul_mod_mont(signed_vec[i], 6553568, mod);  //6553568 : R mod Q, (-q,q) 범위로 감산
             // if (signed_vec[i] < 0) signed_vec[i] += (mod->value);
             signed_vec[i] += (signed_vec[i]>>31)&(mod->value);
             vec[i] = signed_vec[i];
