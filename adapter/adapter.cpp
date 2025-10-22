@@ -172,9 +172,9 @@ int main(int argc, char *argv[])
 {
     // -- Instructions: Uncomment one of the below degrees and run
     //    or specify degree as a command line argument
-    // size_t degree = 1024;
+    size_t degree = 1024;
     // size_t degree = 2048;
-    size_t degree = 4096;
+    // size_t degree = 4096;
     // size_t degree = 8192;
     // size_t degree = 16384;
 

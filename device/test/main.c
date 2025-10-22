@@ -89,9 +89,9 @@ int main(void)
 #endif
 
 #ifdef SE_USE_MALLOC
-    // const size_t n =  1024, nprimes = 1;
+    const size_t n =  1024, nprimes = 1;
     // const size_t n =  2048, nprimes = 1;
-    const size_t n = 4096, nprimes = 3;
+    // const size_t n = 4096, nprimes = 3;
     // const size_t n =  8192, nprimes = 6;
     // const size_t n = 16384, nprimes = 13;
 #else
