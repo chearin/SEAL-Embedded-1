@@ -24,6 +24,7 @@
 #include "sample.h"
 #include "uintmodarith.h"
 #include "util_print.h"
+#include "m1cycles.h"
 
 #ifdef SE_USE_MALLOC
 size_t ckks_get_mempool_size_sym(size_t degree)
@@ -262,7 +263,19 @@ void ckks_encode_encrypt_sym(const Parms *parms, const int64_t *conj_vals_int,
 
     // -- Note: Calling ntt_roots_initialize will do nothing if SE_NTT_OTF is defined
     ntt_roots_initialize(parms, ntt_roots);
-    ntt_inpl(parms, ntt_roots, c0_s);
+    //! performance
+    long long sum = 0;
+    long long start = 0, end = 0;
+    setup_rdtsc();
+    for(int j = 0; j < 1000; j++)
+    {
+        start = rdtsc();
+        ntt_inpl(parms, ntt_roots, c0_s);    
+        end = rdtsc();
+        sum += (end - start);    
+    }
+    printf("\n\n\n\nCycles:)) %llu\n\n\n\n", (unsigned long long)sum/1000);
+    
 #ifndef SE_DISABLE_TESTING_CAPABILITY
     // -- Save ntt(reduced(s)) for later decryption
     // print_poly_ternary("s (ntt)", c0_s, parms->coeff_count, false);

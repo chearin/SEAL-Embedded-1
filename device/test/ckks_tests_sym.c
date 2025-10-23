@@ -141,18 +141,17 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
         if (!encode_only)
         { ckks_sym_init(&parms, NULL, NULL, &shareable_prng, &prng, conj_vals_int); }
 
-        //performance
-        long long sum = 0;
-        long long start = 0, end = 0;
-        setup_rdtsc();
+        // //! performance
+        // long long sum = 0;
+        // long long start = 0, end = 0;
+        // setup_rdtsc();
 
-        for(int j = 0; j < 1000; j++)
-        {
-            start = rdtsc();
+        // for(int j = 0; j < 1000; j++)
+        // {
+        //     start = rdtsc();
             for (size_t i = 0; i < parms.nprimes; i++)
             {
                 // print_zz("\n ***** Modulus", parms.curr_modulus->value);
-
                 // -- Per prime Encode + Encrypt
                 // print_poly_ternary("s", s, n, true);
                 // print_poly_ternary_full("s", s, n, true);
@@ -161,7 +160,6 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
                 // print_poly_int64("conj_vals_int", conj_vals_int, n);
                 // print_poly_ternary("s", s, n, true);
                 // print_poly_ternary("s_save", s, n, false);
-
                 // -- Check that decrypt gives back the pt+err and decode gives back v.
                 // -- Note: This will only decode if values is non-zero. Otherwise, will
                 //    just decrypt.
@@ -179,12 +177,12 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
                 // -- Done checking this prime. Now try next prime if requested
                 bool ret = ckks_next_prime_sym(&parms, s);
                 se_assert(ret || (!ret && i + 1 == parms.nprimes));
+            
             }
-            end = rdtsc();
-            sum += (end - start);    
-        }
-                
-        printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/1000);
+        //     end = rdtsc();
+        //     sum += (end - start);    
+        // }    
+        // printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/1000);
 
         // -- Can exit now if rlwe testing only
         if (!test_message) break;
