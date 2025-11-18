@@ -12,6 +12,8 @@
 #include "defines.h"
 #include "util_print.h"
 
+#define SE_DEFAULT_4K_27BIT
+
 /**
 Helper function to check if a value is a power of 2.
 
@@ -196,10 +198,15 @@ void set_parms_ckks(size_t degree, size_t nprimes, Parms *parms)
             set_parms_ckks_27bit_helper(parms);
             parms->scale = pow(2, 20);
             break;
+        // case 2048:
+        //     se_assert(parms->nprimes == 1);
+        //     set_parms_ckks_27bit_helper(parms);
+        //     parms->scale = pow(2, 25);
+        //     break;
         case 2048:
             se_assert(parms->nprimes == 1);
             set_parms_ckks_27bit_helper(parms);
-            parms->scale = pow(2, 25);
+            parms->scale = pow(2, 20);
             break;
 #ifdef SE_DEFAULT_4K_27BIT
         case 4096:

@@ -18,6 +18,8 @@
 #include "seal/seal.h"
 #include "utils.h"
 
+#define SEALE_DEFAULT_4K_27BIT
+
 using namespace std;
 using namespace seal;
 using namespace seal::util;
@@ -172,8 +174,8 @@ int main(int argc, char *argv[])
 {
     // -- Instructions: Uncomment one of the below degrees and run
     //    or specify degree as a command line argument
-    size_t degree = 1024;
-    // size_t degree = 2048;
+    // size_t degree = 1024;
+    size_t degree = 2048;
     // size_t degree = 4096;
     // size_t degree = 8192;
     // size_t degree = 16384;
@@ -200,9 +202,13 @@ int main(int argc, char *argv[])
             cout << "27}, scale = pow(2, 20)" << endl;
             scale = pow(2, 20);
             break;
+        // case 2048:
+        //     cout << "27, 27}, scale = pow(2, 25)" << endl;
+        //     scale = pow(2, 25);
+        //     break;
         case 2048:
             cout << "27, 27}, scale = pow(2, 25)" << endl;
-            scale = pow(2, 25);
+            scale = pow(2, 20);
             break;
 #ifdef SEALE_DEFAULT_4K_27BIT
         case 4096:
