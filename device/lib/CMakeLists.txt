@@ -2,7 +2,6 @@
 # Licensed under the MIT license.
 
 set(SE_LIB_SOURCE_FILES ${SE_LIB_SOURCE_FILES}
-	#${CMAKE_CURRENT_LIST_DIR}/barrett.s
 	${CMAKE_CURRENT_LIST_DIR}/ckks_common.c
 	${CMAKE_CURRENT_LIST_DIR}/ckks_sym.c
 	${CMAKE_CURRENT_LIST_DIR}/ckks_asym.c
@@ -18,9 +17,9 @@ set(SE_LIB_SOURCE_FILES ${SE_LIB_SOURCE_FILES}
 	${CMAKE_CURRENT_LIST_DIR}/uint_arith.c
 	${CMAKE_CURRENT_LIST_DIR}/ntt.c
 	${CMAKE_CURRENT_LIST_DIR}/intt.c
+	${CMAKE_CURRENT_LIST_DIR}/m1cycles.c
 	${CMAKE_CURRENT_LIST_DIR}/seal_embedded.c
 )
 
 add_subdirectory(shake256)
 set(SE_LIB_SOURCE_FILES ${SE_LIB_SOURCE_FILES} PARENT_SCOPE)
-	

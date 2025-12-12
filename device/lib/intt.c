@@ -221,91 +221,6 @@ void intt_non_lazy_inpl(const Parms *parms, const ZZ *intt_roots, ZZ inv_n, ZZ l
         */
     }
 }
-
-void intt_non_lazy_inpl_test(const Parms *parms, const ZZ *intt_roots, ZZ inv_n, ZZ last_inv_sn, ZZ *vec)
-{
-    // -- See ntt.c for a more detailed explaination of algorithm
-
-    se_assert(parms && parms->curr_modulus && vec);
-
-    size_t n = parms->coeff_count;
-    size_t logn = parms->logn;
-    Modulus *mod = parms->curr_modulus;
-
-    size_t tt = 1;     // size of butterflies
-    size_t h = n / 2;  // number of groups
-
-#ifdef SE_INTT_OTF
-    SE_UNUSED(intt_roots);
-    ZZ root = get_intt_root(n, mod->value);
-#elif defined(SE_INTT_ONE_SHOT) || defined(SE_INTT_REG)
-    size_t root_idx = 1;  // We technically don't need to store the 0th one...
-#endif
-
-    // -- Option 1: Do everything except the last round
-    for (size_t i = 0; i < (logn - 1); i++, tt *= 2, h /= 2)  // rounds
-    // -- Option 2: Do everything incluing the last round
-    // for (size_t i = 0; i < logn; i++, tt *= 2, h /= 2) // rounds
-    {
-        for (size_t j = 0, kstart = 0; j < h; j++, kstart += 2 * tt)  // groups
-        {
-#ifdef SE_INTT_OTF
-            // ZZ power = bitrev(h + j, logn);
-            // ZZ s     = exponentiate_uint_mod(root, power, mod);
-            ZZ power = h + j;
-            ZZ s = exponentiate_uint_mod_bitrev(root, power, logn, mod);
-            // change montgomery domain
-            // s = (int64_t)s*((int64_t)1<<32) % (mod->value);
-            s = mul_mod(s, 6553568, mod);
-#elif defined(SE_INTT_ONE_SHOT) || defined(SE_INTT_REG)
-            se_assert(intt_roots);
-            ZZ s = intt_roots[root_idx++];
-#endif
-            /*
-            if (i == logn - 1)
-            {
-                printf("\tinverse_tt,  last j: %zu\n", j);
-                printf("\tinverse_tt,  last h: %zu\n", h);
-                print_zz("\tinverse_ntt, last s", s);
-            }
-            */
-            for (size_t k = kstart; k < (kstart + tt); k++)  // pairs
-            {
-                ZZ u = vec[k];
-                ZZ v = vec[k + tt];
-                vec[k] = add_mod(u, v, mod);
-                vec[k + tt] = unsigned_mul_mod_mont(sub_mod(u, v, mod), s, mod);
-                // vec[k + tt] = unsigned_mul_mod_mont(sub_mod(u, v, mod), s, mod);
-            }
-        }
-        // print_poly_full("vec", vec, n);
-    }
-    // print_poly_full("vec", vec, n);
-
-    // print_zz("\tinverse ntt: tt", tt);
-    // print_zz("\tinverse ntt: h", h);
-#if defined(SE_INTT_ONE_SHOT) || defined(SE_INTT_REG)
-    print_zz("inverse ntt: root_idx", root_idx);
-#endif
-
-    // -- Finally, need to multiply by n^{-1}
-    // -- Merge this step with the last round we would have performed in the above loop.
-    for (size_t i = 0; i < n / 2; i++)
-    {
-        ZZ u = vec[i];
-        ZZ v = vec[i + n / 2];
-        ///*
-        // -- Use this if we do one less round above (Option 1), and merge with that last round
-        vec[i] = mul_mod(add_mod(u, v, mod), inv_n, mod);
-        vec[i + n / 2] = mul_mod(sub_mod(u, v, mod), last_inv_sn, mod);
-        //*/
-        // -- This is just normal mult by n-inverse (Option 2)
-        /*
-        mul_mod_inpl(&(vec[i]),         inv_n, mod);
-        mul_mod_inpl(&(vec[i + n / 2]), inv_n, mod);
-        */
-    }
-}
 #endif
 
 void intt_inpl(const Parms *parms, const ZZ *intt_roots, ZZ *vec)
@@ -582,7 +497,6 @@ void intt_inpl(const Parms *parms, const ZZ *intt_roots, ZZ *vec)
 #else
     // -- Note: intt_roots will be ignored if SE_INTT_OTF is defined
     intt_non_lazy_inpl(parms, intt_roots, inv_n, last_inv_sn, vec);
-    // intt_non_lazy_inpl_test(parms, intt_roots, inv_n, last_inv_sn, vec);
 #endif
 }
 

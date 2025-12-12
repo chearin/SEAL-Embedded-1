@@ -10,7 +10,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>  // memset
-#include <stdint.h>
 
 #include "intt.h"
 #include "ntt.h"
@@ -19,7 +18,6 @@
 #include "test_common.h"
 #include "uintmodarith.h"
 #include "util_print.h"
-#include "m1cycles.h"
 
 #ifndef SE_USE_MALLOC
 #ifdef SE_NTT_FAST
@@ -83,8 +81,8 @@ void test_poly_mult_ntt_intt_helper(const Parms *parms, const ZZ *ntt_roots, con
 {
     size_t n     = parms->coeff_count;
     Modulus *mod = parms->curr_modulus;
-    // print_poly("a          ", a, n);
-    // print_poly("b          ", b, n);
+    print_poly("a          ", a, n);
+    print_poly("b          ", b, n);
 
     // -- intt(ntt(a) . ntt(b)) = [a * b]_Rq
     const char *left_side_str  = "ntt(a) . ntt(b)";
@@ -97,32 +95,32 @@ void test_poly_mult_ntt_intt_helper(const Parms *parms, const ZZ *ntt_roots, con
         memcpy(sb_res, a, n * sizeof(a[0]));  // sb_res = a
     }
 
-    // ntt_inpl(parms, ntt_roots, sb_res);  // sb_res = ntt(a)
-    // print_poly("     ntt(a) ", sb_res, n);
-    // intt_inpl(parms, intt_roots, sb_res);  // sb_res = intt(ntt(a))
-    // print_poly("a           ", a, n);
-    // print_poly("intt(ntt(a))", sb_res, n);
-    // compare_poly("a           ", a, "intt(ntt(a))", sb_res, n);
+    ntt_inpl(parms, ntt_roots, sb_res);  // sb_res = ntt(a)
+    print_poly("     ntt(a) ", sb_res, n);
+    intt_inpl(parms, intt_roots, sb_res);  // sb_res = intt(ntt(a))
+    print_poly("a           ", a, n);
+    print_poly("intt(ntt(a))", sb_res, n);
+    compare_poly("a           ", a, "intt(ntt(a))", sb_res, n);
 
     // -- Now, test multiplication
     // printf("About to perform schoolbook multiplication\n");
-    // poly_mult_mod_sb(a, b, n, mod, sb_res);  // This is very slow!
+    poly_mult_mod_sb(a, b, n, mod, sb_res);  // This is very slow!
     // printf("Back from performing schoolbook multiplication\n");
-    // print_poly("    [a * b]_Rq ", sb_res, n);
+    print_poly("    [a * b]_Rq ", sb_res, n);
 
     ntt_inpl(parms, ntt_roots, a);
     // print_poly("ntt(a)         ", a, n);
 
-    // ntt_inpl(parms, ntt_roots, b);
+    ntt_inpl(parms, ntt_roots, b);
     // print_poly("ntt(b)         ", b, n);
 
     // -- Left side:  intt(ntt(a) . ntt(b))
-    // poly_mult_mod_ntt_form_inpl(a, b, n, mod);
+    poly_mult_mod_ntt_form_inpl(a, b, n, mod);
     intt_inpl(parms, intt_roots, a);
-    // print_poly(left_side_str, a, n);
+    print_poly(left_side_str, a, n);
 
     // -- Finally, compare left side with right side
-    // compare_poly(right_side_str, sb_res, left_side_str, a, n);
+    compare_poly(right_side_str, sb_res, left_side_str, a, n);
 }
 
 /**
@@ -296,27 +294,9 @@ void test_poly_mult_ntt(size_t n, size_t nprimes)
                 default: break;
             }
             if (intt_mult_test)
-            {
-                //performance
-                long long sum = 0;
-                long long start = 0, end = 0;
-                setup_rdtsc();
-
-                for(int j = 0; j < 1000; j++)
-                {
-                    start = rdtsc();
-                    test_poly_mult_ntt_intt_helper(&parms, ntt_roots, intt_roots, sb_res, a, b);
-                    end = rdtsc();
-                    sum += (end - start);    
-                }
-                
-                printf("\n\n\n\nCycles: %llu\n\n\n\n", (unsigned long long)sum/1000);
-            
-            }
+                test_poly_mult_ntt_intt_helper(&parms, ntt_roots, intt_roots, sb_res, a, b);
             else
-            {
                 test_poly_mult_ntt_only_helper(&parms, ntt_roots, sb_res, a, b);
-            }
         }
         if ((parms.curr_modulus_idx + 1) < parms.nprimes)
         {

@@ -13,11 +13,11 @@ Pseudo-random number generator.
 #include <stdlib.h>
 #include <string.h>  // memset
 
-#include "get_random.h"
-
 #include "defines.h"
 #include "inttypes.h"
 #include "shake256/fips202.h"
+
+#include "get_random.h"
 
 #ifdef SE_RAND_GETRANDOM
 #include <sys/random.h>  // getrandom
