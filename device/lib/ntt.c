@@ -362,7 +362,7 @@ void cr_signed_ntt_lazy_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
         {
             for (size_t j = 0, kstart = 0; j < h; j++, kstart += 2 * tt)  // groups
             {
-#ifdef SE_NT_OTF
+#ifdef SE_NTT_OTF
                 ZZ power = h + j;
                 ZZ s = exponentiate_uint_mod_bitrev(root, power, logn, mod);
 #else
@@ -455,8 +455,8 @@ void ntt_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
 #else
     // ntt_non_lazy_inpl(parms, ntt_roots, vec);
     // ntt_non_lazy_inpl_test(parms, ntt_roots, vec);
-    // ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
-    cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
+    ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
+    // cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
 #endif
 }
 
