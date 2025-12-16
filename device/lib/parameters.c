@@ -250,7 +250,7 @@ void set_custom_parms_ckks(size_t degree, double scale, size_t nprimes, const ZZ
     for (size_t i = 0; i < nprimes; i++)
     {
         se_assert(modulus_vals[i]);  // Should never be 0
-        set_modulus_custom(modulus_vals[i], ratios[i], ratios[i + 1], 0, 0, &(parms->moduli[i]));
+        set_modulus_custom(modulus_vals[i], ratios[i], ratios[i + 1], 0, 0, 0, &(parms->moduli[i]));
     }
     parms->scale = scale;
 }

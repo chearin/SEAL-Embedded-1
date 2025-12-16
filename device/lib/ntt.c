@@ -426,7 +426,7 @@ void cr_signed_ntt_lazy_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
             // todo youngbeom
             // signed_vec[i] += ((ZZ)(signed_vec[i] < 0) * 10 * (mod->value));
             // signed_vec[i] = signed_vec[i] % (mod->value);  // todo chaerin 나중에 single word barrett reduce로 바꾸기
-            signed_vec[i] = mul_mod_mont(signed_vec[i], 6553568, mod);  //6553568 : R mod Q, (-q,q) 범위로 감산
+            signed_vec[i] = mul_mod_mont(signed_vec[i], (mod->R), mod);  //6553568(q = 134012929) : R mod Q, (-q,q) 범위로 감산
             // if (signed_vec[i] < 0) signed_vec[i] += (mod->value);
             signed_vec[i] += (signed_vec[i]>>31)&(mod->value);
             vec[i] = signed_vec[i];
@@ -455,8 +455,8 @@ void ntt_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
 #else
     // ntt_non_lazy_inpl(parms, ntt_roots, vec);
     // ntt_non_lazy_inpl_test(parms, ntt_roots, vec);
-    ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
-    // cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
+    // ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
+    cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
 #endif
 }
 

@@ -120,14 +120,14 @@ int main(void)
 
     test_fft(n);
 
-    // test_enc_zero_sym(n, nprimes);
+    test_enc_zero_sym(n, nprimes);
     test_enc_zero_asym(n, nprimes);
 
-    // test_ckks_encode(n);
+    test_ckks_encode(n);
 
     // // -- Main tests
-    // test_ckks_encode_encrypt_sym(n, nprimes);
-    // test_ckks_encode_encrypt_asym(n, nprimes);
+    test_ckks_encode_encrypt_sym(n, nprimes);
+    test_ckks_encode_encrypt_asym(n, nprimes);
 
     // -- Run these tests to verify api
     // -- Check the result with the adapter by writing output to a text file
