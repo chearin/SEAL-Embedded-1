@@ -453,10 +453,10 @@ void ntt_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
         if (vec[i] >= q) vec[i] -= q;
     }
 #else
-    // ntt_non_lazy_inpl(parms, ntt_roots, vec);
+    ntt_non_lazy_inpl(parms, ntt_roots, vec);
     // ntt_non_lazy_inpl_test(parms, ntt_roots, vec);
     // ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
-    cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
+    // cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
 #endif
 }
 

@@ -263,20 +263,20 @@ void ckks_encode_encrypt_sym(const Parms *parms, const int64_t *conj_vals_int,
 
     // -- Note: Calling ntt_roots_initialize will do nothing if SE_NTT_OTF is defined
     ntt_roots_initialize(parms, ntt_roots);
-    // ntt_inpl(parms, ntt_roots, c0_s);
+    ntt_inpl(parms, ntt_roots, c0_s);
 
     // ! performance
-    long long sum = 0;
-    long long start = 0, end = 0;
-    setup_rdtsc();
-    for(int j = 0; j < 1; j++)
-    {
-        start = rdtsc();
-        ntt_inpl(parms, ntt_roots, c0_s);    
-        end = rdtsc();
-        sum += (end - start);    
-    }
-    printf("\n\n\n\nCycles:)) %llu\n\n\n\n", (unsigned long long)sum/1);
+    // long long sum = 0;
+    // long long start = 0, end = 0;
+    // setup_rdtsc();
+    // for(int j = 0; j < 1; j++)
+    // {
+    //     start = rdtsc();
+    //     ntt_inpl(parms, ntt_roots, c0_s);    
+    //     end = rdtsc();
+    //     sum += (end - start);    
+    // }
+    // printf("\n\n\n\nCycles:)) %llu\n\n\n\n", (unsigned long long)sum/1);
 
 #ifndef SE_DISABLE_TESTING_CAPABILITY
     // -- Save ntt(reduced(s)) for later decryption

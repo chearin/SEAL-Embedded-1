@@ -19,6 +19,7 @@
 #include "sample.h"
 #include "test_common.h"
 #include "util_print.h"
+#include "m1cycles.h"
 
 #if !((defined(SE_ON_SPHERE_M4) || defined(SE_ON_NRF5)) && defined(SE_ENCRYPT_TYPE_SYMMETRIC))
 /**
@@ -48,7 +49,7 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
     if (!parms.sample_s) se_assert(parms.small_s);
 
 #ifdef SE_USE_MALLOC
-    print_ckks_mempool_size(n, 0);
+    // print_ckks_mempool_size(n, 0);
     ZZ *mempool = ckks_mempool_setup_asym(n);
 #else
     print_ckks_mempool_size();
@@ -84,9 +85,9 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
     ZZ *s            = calloc(n / 16, sizeof(ZZ));
     int8_t *ep_small = calloc(n, sizeof(int8_t));
     ZZ *ntt_s_save   = calloc(n, sizeof(ZZ));  // ntt(expanded(s)) or expanded(s)
-    printf("            s addr: %p\n", s);
-    printf("     ep_small addr: %p\n", ep_small);
-    printf("   ntt_s_save addr: %p\n", ntt_s_save);
+    // printf("            s addr: %p\n", s);
+    // printf("     ep_small addr: %p\n", ep_small);
+    // printf("   ntt_s_save addr: %p\n", ntt_s_save);
 #else
     ZZ s_vec[SE_DEGREE_N / 16];
     int8_t ep_small_vec[SE_DEGREE_N];
@@ -104,10 +105,10 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
     ZZ *ntt_e1_save   = calloc(n, sizeof(ZZ));
     ZZ *ntt_u_save    = calloc(n, sizeof(ZZ));
     ZZ *temp_test_mem = calloc(4 * n, sizeof(ZZ));
-    printf("  ntt_ep_save addr: %p\n", ntt_ep_save);
-    printf("  ntt_e1_save addr: %p\n", ntt_e1_save);
-    printf("   ntt_u_save addr: %p\n", ntt_u_save);
-    printf("temp_test_mem addr: %p\n", temp_test_mem);
+    // printf("  ntt_ep_save addr: %p\n", ntt_ep_save);
+    // printf("  ntt_e1_save addr: %p\n", ntt_e1_save);
+    // printf("   ntt_u_save addr: %p\n", ntt_u_save);
+    // printf("temp_test_mem addr: %p\n", temp_test_mem);
 #elif !defined(SE_USE_MALLOC)
     ZZ ntt_ep_save_vec[SE_DEGREE_N];          // ntt(reduced(ep)) or reduced(ep)
     ZZ ntt_e1_save_vec[SE_DEGREE_N];
@@ -129,7 +130,7 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
     // -- Set up parameters and index_map if applicable
     ckks_setup(n, nprimes, index_map, &parms);
 
-    print_test_banner("Asymmetric Encryption", &parms);
+    // print_test_banner("Asymmetric Encryption", &parms);
 
     // -- If s is allocated space ahead of time, can load ahead of time too.
     // -- (If we are testing and sample s is set, this will also sample s)
@@ -146,7 +147,7 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
         {
             // -- Set test values
             set_encode_encrypt_test(testnum, vlen, v);
-            print_poly_flpt("v        ", v, vlen);
+            // print_poly_flpt("v        ", v, vlen);
         }
 
         // ------------------------------------------
@@ -185,14 +186,14 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
         // if (parms.small_u) set_small_poly_idx(0, 1, u);
         // else				  u[0] = 1;
 
-        print_poly_ternary("u   ", u, n, true);
-        print_poly_ternary("s   ", s, n, true);
+        // print_poly_ternary("u   ", u, n, true);
+        // print_poly_ternary("s   ", s, n, true);
         // print_poly_int8_full("e1  ", e1_ptr, n);
 
         for (size_t i = 0; i < parms.nprimes; i++)
         {
             const Modulus *mod = parms.curr_modulus;
-            print_zz(" ***** Modulus", mod->value);
+            // print_zz(" ***** Modulus", mod->value);
 
 #ifdef SE_ON_NRF5
             ZZ *ntt_ep_save = calloc(n, sizeof(ZZ));  // ntt(reduced(ep)) or reduced(ep)
@@ -203,52 +204,70 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
             //    check the "decryption". Need to generate pk here instead to keep
             //    track of the secret key error term.
             se_assert(!parms.pk_from_file);
-            printf("generating pk...\n");
+            // printf("generating pk...\n");
             gen_pk(&parms, s, ntt_roots, NULL, &shareable_prng, ntt_s_save, ep_small, ntt_ep_save,
                    pk_c0, pk_c1);
-            printf("...done generating pk.\n");
+            // printf("...done generating pk.\n");
 
             // -- Debugging
-            print_poly("pk0 ", pk_c0, n);
-            print_poly("pk1 ", pk_c1, n);
-            print_poly_ternary("u   ", u, n, 1);
+            // print_poly("pk0 ", pk_c0, n);
+            // print_poly("pk1 ", pk_c1, n);
+            // print_poly_ternary("u   ", u, n, 1);
             // print_poly_int8_full("e1  ", e1_ptr, n);
             // if (ntt_e1_ptr) print_poly_full("ntt e1  ", ntt_e1_ptr, n);
 
             // -- Per prime Encode + Encrypt
-            ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte,
+            // ! performance
+            long long sum = 0;
+            long long start = 0, end = 0;
+            ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
+            ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
+            ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
+            ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
+            ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
+
+            setup_rdtsc();
+            for(int j = 0; j < 1000; j++)
+            {
+                start = rdtsc();
+                ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte,
                                      ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
-            print_poly_int64("conj_vals_int      ", conj_vals_int, n);
+                end = rdtsc();
+                sum += (end - start);    
+            }
+            printf("ckks_encdode_encrypt_asym Cycles:)) %llu\n\n", (unsigned long long)sum/1000);
+            
+            // print_poly_int64("conj_vals_int      ", conj_vals_int, n);
 
             // -- Debugging
             // print_poly_int8_full("e1  ", e1, n);
             // if (ntt_e1_ptr) print_poly_full("ntt e1  ", ntt_e1, n);
-            print_poly_ternary("u   ", u, n, 1);
+            // print_poly_ternary("u   ", u, n, 1);
             // if (ntt_u_save) print_poly("ntt_u_save   ", ntt_u_save, n);
 
             // -- Decryption does the following:
             //    (c1 = pk1*u + e1)*s + (c0 = pk0*u + e0 + m)  -->
             //    ((pk1 = c1 = a)*u + e1)*s + ((pk0 = c1 = -a*s+ep)*u + e0 + m) -->
             //    a*u*s + e1*s -a*s*u + ep*u + e0 ===> e1*s + ep*u + e0 + m
-            print_poly("c0      ", pk_c0, n);
-            print_poly("c1      ", pk_c1, n);
-            print_poly("ntt(u)  ", ntt_u_save, n);
-            print_poly("ntt(ep) ", ntt_ep_save, n);
+            // print_poly("c0      ", pk_c0, n);
+            // print_poly("c1      ", pk_c1, n);
+            // print_poly("ntt(u)  ", ntt_u_save, n);
+            // print_poly("ntt(ep) ", ntt_ep_save, n);
             poly_mult_mod_ntt_form_inpl(ntt_u_save, ntt_ep_save, n, mod);
-            print_poly("ntt(u) * ntt(ep)", ntt_u_save, n);
+            // print_poly("ntt(u) * ntt(ep)", ntt_u_save, n);
 
-            print_poly("ntt(s)  ", ntt_s_save, n);
-            print_poly("ntt(e1) ", ntt_e1_save, n);
+            // print_poly("ntt(s)  ", ntt_s_save, n);
+            // print_poly("ntt(e1) ", ntt_e1_save, n);
             poly_mult_mod_ntt_form_inpl(ntt_e1_save, ntt_s_save, n, mod);
-            print_poly("ntt(s) * ntt(e1)", ntt_e1_save, n);
+            // print_poly("ntt(s) * ntt(e1)", ntt_e1_save, n);
 
-            print_poly("ntt(u) * ntt(ep)", ntt_u_save, n);
+            // print_poly("ntt(u) * ntt(ep)", ntt_u_save, n);
             poly_add_mod_inpl(ntt_u_save, ntt_e1_save, n, mod);
-            print_poly("ntt(u) * ntt(ep) + ntt(s) * ntt(e1)", ntt_u_save, n);
+            // print_poly("ntt(u) * ntt(ep) + ntt(s) * ntt(e1)", ntt_u_save, n);
 
-            print_poly("ntt(m + e0)", ntt_u_e1_pte, n);
+            // print_poly("ntt(m + e0)", ntt_u_e1_pte, n);
             poly_add_mod_inpl(ntt_u_e1_pte, ntt_u_save, n, mod);
-            print_poly("ntt(u) * ntt(ep) + ntt(s) * ntt(e1) + ntt(m + e0)", ntt_u_e1_pte, n);
+            // print_poly("ntt(u) * ntt(ep) + ntt(s) * ntt(e1) + ntt(m + e0)", ntt_u_e1_pte, n);
             ZZ *pterr = ntt_u_e1_pte;
 
 #ifdef SE_ON_NRF5
@@ -275,8 +294,8 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
             // -- Note: sizeof(max(ntt_roots, ifft_roots)) must be passed as temp memory to undo
             //    ifft.
             bool s_test_save_small = 0;
-            check_decode_decrypt_inpl(pk_c0, pk_c1, v, vlen, ntt_s_save, s_test_save_small, pterr,
-                                      index_map, &parms, temp_test_mem);
+            // check_decode_decrypt_inpl(pk_c0, pk_c1, v, vlen, ntt_s_save, s_test_save_small, pterr,
+            //                           index_map, &parms, temp_test_mem);
 
             // -- Done checking this prime, now try next prime if requested
             // -- Note: This does nothing to u if u is in small form

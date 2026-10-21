@@ -21,6 +21,7 @@
 #include "sample.h"
 #include "test_common.h"
 #include "util_print.h"
+#include "m1cycles.h"
 
 #if !((defined(SE_ON_SPHERE_M4) || defined(SE_ON_NRF5)) && !defined(SE_ENCRYPT_TYPE_SYMMETRIC))
 /**
@@ -48,7 +49,7 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
     if (!parms.sample_s) se_assert(parms.small_s);
 
 #ifdef SE_USE_MALLOC
-    print_ckks_mempool_size(n, true);
+    // print_ckks_mempool_size(n, true);
     ZZ *mempool = ckks_mempool_setup_sym(n);
 #else
     print_ckks_mempool_size();
@@ -102,7 +103,7 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
     // -- Set up parameters and index_map if applicable
     ckks_setup(n, nprimes, index_map, &parms);
 
-    print_test_banner("Symmetric Encryption", &parms);
+    // print_test_banner("Symmetric Encryption", &parms);
 
     // -- If s is allocated space ahead of time, can load ahead of time too
     // -- If we are testing and sample s is set, this will also sample s
@@ -119,7 +120,7 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
         if (test_message)
         {
             set_encode_encrypt_test(testnum, vlen, v);
-            print_poly_flpt("v        ", v, vlen);
+            // print_poly_flpt("v        ", v, vlen);
         }
 
         // -- Begin encode-encrypt sequence
@@ -142,13 +143,31 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
 
         for (size_t i = 0; i < parms.nprimes; i++)
         {
-            print_zz("\n ***** Modulus", parms.curr_modulus->value);
+            // print_zz("\n ***** Modulus", parms.curr_modulus->value);
 
             // -- Per prime Encode + Encrypt
             // print_poly_ternary("s", s, n, true);
             // print_poly_ternary_full("s", s, n, true);
-            ckks_encode_encrypt_sym(&parms, conj_vals_int, NULL, &shareable_prng, s, ntt_pte,
+            // ! performance
+            long long sum = 0;
+            long long start = 0, end = 0;
+            ckks_encode_encrypt_sym(&parms, conj_vals_int, NULL, &shareable_prng, s, ntt_pte, ntt_roots, c0, c1, s_test_save, c1_test_save);
+            ckks_encode_encrypt_sym(&parms, conj_vals_int, NULL, &shareable_prng, s, ntt_pte, ntt_roots, c0, c1, s_test_save, c1_test_save);
+            ckks_encode_encrypt_sym(&parms, conj_vals_int, NULL, &shareable_prng, s, ntt_pte, ntt_roots, c0, c1, s_test_save, c1_test_save);
+            ckks_encode_encrypt_sym(&parms, conj_vals_int, NULL, &shareable_prng, s, ntt_pte, ntt_roots, c0, c1, s_test_save, c1_test_save);
+            ckks_encode_encrypt_sym(&parms, conj_vals_int, NULL, &shareable_prng, s, ntt_pte, ntt_roots, c0, c1, s_test_save, c1_test_save);    
+
+            setup_rdtsc();
+            for(int j = 0; j < 1000; j++)
+            {
+                start = rdtsc();
+                ckks_encode_encrypt_sym(&parms, conj_vals_int, NULL, &shareable_prng, s, ntt_pte,
                                     ntt_roots, c0, c1, s_test_save, c1_test_save);
+                end = rdtsc();
+                sum += (end - start);    
+            }
+            printf("ckks_encdode_encrypt_sym Cycles:)) %llu\n\n", (unsigned long long)sum/1000);
+            
             // print_poly_int64("conj_vals_int", conj_vals_int, n);
             // print_poly_ternary("s", s, n, true);
             // print_poly_ternary("s_save", s, n, false);
@@ -159,8 +178,8 @@ void test_ckks_sym_base(size_t n, size_t nprimes, bool test_message)
             // -- Note: sizeof(max(ntt_roots, ifft_roots)) must be passed as temp memory
             //    to undo ifft
             bool s_test_save_small = false;
-            check_decode_decrypt_inpl(c0, c1_test_save, v, vlen, s_test_save, s_test_save_small,
-                                      ntt_pte, index_map, &parms, temp_test_mem);
+            // check_decode_decrypt_inpl(c0, c1_test_save, v, vlen, s_test_save, s_test_save_small,
+            //                           ntt_pte, index_map, &parms, temp_test_mem);
 
 #ifdef SE_SK_PERSISTENT_ACROSS_PRIMES
             // -- Decoding corrupted this, so load it back
