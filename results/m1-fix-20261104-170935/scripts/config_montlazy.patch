@@ -1,0 +1,15 @@
+--- /private/tmp/claude-501/-Users-gimchaelin-Desktop-git-SEAL-Embedded-1/acaf6c67-a1cf-4827-964f-2c07567ac451/scratchpad/src_postfix/device/lib/ntt.c	2026-11-04 17:09:53
++++ lib/ntt.c	2026-11-04 17:11:02
+@@ -453,10 +453,10 @@
+         if (vec[i] >= q) vec[i] -= q;
+     }
+ #else
+-    ntt_non_lazy_inpl(parms, ntt_roots, vec);
++    // ntt_non_lazy_inpl(parms, ntt_roots, vec);
+     // ntt_non_lazy_inpl_test(parms, ntt_roots, vec);
+     // ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
+-    // cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
++    cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
+ #endif
+ }
+ 

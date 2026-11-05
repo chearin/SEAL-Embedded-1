@@ -1,0 +1,6 @@
+montlazy_asym_1024,exit=0,asan_errors=0,verify_ok=9,all_passed=1
+montlazy_asym_2048,exit=0,asan_errors=0,verify_ok=9,all_passed=1
+montlazy_asym_4096,exit=0,asan_errors=0,verify_ok=27,all_passed=1
+montlazy_sym_1024,exit=0,asan_errors=0,verify_ok=9,all_passed=1
+montlazy_sym_2048,exit=0,asan_errors=0,verify_ok=9,all_passed=1
+montlazy_sym_4096,exit=0,asan_errors=0,verify_ok=27,all_passed=1

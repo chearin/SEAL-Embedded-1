@@ -1,0 +1,10 @@
+HEAD: 7aa1bf2d35ed3522101bf8dcbc07bac415e135fb
+branch: montgomery_armv8
+On branch montgomery_armv8
+Your branch is up to date with 'origin/montgomery_armv8'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	results/
+
+nothing added to commit but untracked files present (use "git add" to track)

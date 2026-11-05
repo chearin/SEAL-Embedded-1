@@ -1,0 +1,4 @@
+ M device/lib/CMakeLists.txt
+ M device/lib/ntt.c
+?? device/lib/ntt_signed_v2.c
+?? results/

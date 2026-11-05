@@ -1,0 +1,41 @@
+diff --git a/device/lib/CMakeLists.txt b/device/lib/CMakeLists.txt
+index 61f2682..87b1feb 100644
+--- a/device/lib/CMakeLists.txt
++++ b/device/lib/CMakeLists.txt
+@@ -16,6 +16,7 @@ set(SE_LIB_SOURCE_FILES ${SE_LIB_SOURCE_FILES}
+ 	${CMAKE_CURRENT_LIST_DIR}/timer.c
+ 	${CMAKE_CURRENT_LIST_DIR}/uint_arith.c
+ 	${CMAKE_CURRENT_LIST_DIR}/ntt.c
++	${CMAKE_CURRENT_LIST_DIR}/ntt_signed_v2.c
+ 	${CMAKE_CURRENT_LIST_DIR}/intt.c
+ 	${CMAKE_CURRENT_LIST_DIR}/m1cycles.c
+ 	${CMAKE_CURRENT_LIST_DIR}/seal_embedded.c
+diff --git a/device/lib/ntt.c b/device/lib/ntt.c
+index c01180c..922fb23 100644
+--- a/device/lib/ntt.c
++++ b/device/lib/ntt.c
+@@ -20,6 +20,7 @@
+ #if defined(SE_NTT_OTF) || defined(SE_NTT_ONE_SHOT)
+ ZZ get_ntt_root(size_t n, ZZ q);  // defined below
+ #endif
++void cr_signed_ntt_lazy_inpl_v2(const Parms *parms, const ZZ *ntt_roots, ZZ *vec);  // ntt_signed_v2.c
+ 
+ void ntt_roots_initialize(const Parms *parms, ZZ *ntt_roots)
+ {
+@@ -353,7 +354,7 @@ void cr_signed_ntt_lazy_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
+         ZZsign u, v;
+         // todo signed represetation으로 변경 + lazy reduction
+         //* ntt loop 3개
+-        for (size_t i = 0; i < max_n; i++)
++        for (size_t i = 0; i < n; i++)
+         {
+             signed_vec[i] = (ZZsign)vec[i];  // changes from unsigned to signed representation
+         }
+@@ -457,6 +458,7 @@ void ntt_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
+     // ntt_non_lazy_inpl_test(parms, ntt_roots, vec);
+     // ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
+     // cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
++    // cr_signed_ntt_lazy_inpl_v2(parms, ntt_roots, vec);
+ #endif
+ }
+ 
