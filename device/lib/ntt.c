@@ -353,7 +353,7 @@ void cr_signed_ntt_lazy_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
         ZZsign u, v;
         // todo signed represetation으로 변경 + lazy reduction
         //* ntt loop 3개
-        for (size_t i = 0; i < max_n; i++)
+        for (size_t i = 0; i < n; i++)
         {
             signed_vec[i] = (ZZsign)vec[i];  // changes from unsigned to signed representation
         }
