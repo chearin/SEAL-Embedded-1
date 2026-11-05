@@ -20,6 +20,7 @@
 #if defined(SE_NTT_OTF) || defined(SE_NTT_ONE_SHOT)
 ZZ get_ntt_root(size_t n, ZZ q);  // defined below
 #endif
+void cr_signed_ntt_lazy_inpl_v2(const Parms *parms, const ZZ *ntt_roots, ZZ *vec);  // ntt_signed_v2.c
 
 void ntt_roots_initialize(const Parms *parms, ZZ *ntt_roots)
 {
@@ -457,6 +458,7 @@ void ntt_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
     // ntt_non_lazy_inpl_test(parms, ntt_roots, vec);
     // ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
     // cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
+    // cr_signed_ntt_lazy_inpl_v2(parms, ntt_roots, vec);
 #endif
 }
 
