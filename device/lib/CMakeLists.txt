@@ -19,9 +19,15 @@ set(SE_LIB_SOURCE_FILES ${SE_LIB_SOURCE_FILES}
 	${CMAKE_CURRENT_LIST_DIR}/ntt.c
 	${CMAKE_CURRENT_LIST_DIR}/ntt_signed_v2.c
 	${CMAKE_CURRENT_LIST_DIR}/intt.c
-	${CMAKE_CURRENT_LIST_DIR}/m1cycles.c
 	${CMAKE_CURRENT_LIST_DIR}/seal_embedded.c
 )
+
+# Keep Apple kperf implementation intact; provide the same API on Linux.
+if(APPLE)
+    list(APPEND SE_LIB_SOURCE_FILES ${CMAKE_CURRENT_LIST_DIR}/m1cycles.c)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    list(APPEND SE_LIB_SOURCE_FILES ${CMAKE_CURRENT_LIST_DIR}/linux_ticks.c)
+endif()
 
 add_subdirectory(shake256)
 set(SE_LIB_SOURCE_FILES ${SE_LIB_SOURCE_FILES} PARENT_SCOPE)

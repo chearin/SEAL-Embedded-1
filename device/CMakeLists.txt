@@ -324,3 +324,28 @@ if(SE_BUILD_AUDIT_TESTS AND SE_BUILD_LOCAL AND CMAKE_SYSTEM_NAME STREQUAL "Linux
     target_link_options(seal_platform_compat PRIVATE "-Wl,--wrap=getrandom")
     add_test(NAME platform_compat COMMAND seal_platform_compat)
 endif()
+
+# Explicit backend: no implicit ns fallback when hardware cycles are unavailable.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(SE_LINUX_TIMER "PERF_CYCLES" CACHE STRING "PERF_CYCLES or MONOTONIC_RAW")
+    set_property(CACHE SE_LINUX_TIMER PROPERTY STRINGS PERF_CYCLES MONOTONIC_RAW)
+    if(SE_LINUX_TIMER STREQUAL "PERF_CYCLES")
+        add_definitions(-DSE_LINUX_PERF_CYCLES)
+    elseif(NOT SE_LINUX_TIMER STREQUAL "MONOTONIC_RAW")
+        message(FATAL_ERROR "Invalid SE_LINUX_TIMER")
+    endif()
+endif()
+
+
+if(SE_BUILD_AUDIT_TESTS AND SE_BUILD_LOCAL AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_executable(seal_pmu_smoke test/pmu_smoke_tests.c)
+    target_link_libraries(seal_pmu_smoke PRIVATE seal_embedded)
+    add_test(NAME pmu_smoke COMMAND seal_pmu_smoke)
+    set_tests_properties(pmu_smoke PROPERTIES SKIP_RETURN_CODE 77)
+    if(SE_LINUX_TIMER STREQUAL "PERF_CYCLES")
+        add_executable(seal_pmu_failures test/pmu_failure_tests.c)
+        target_link_libraries(seal_pmu_failures PRIVATE seal_embedded)
+        target_link_options(seal_pmu_failures PRIVATE "-Wl,--wrap=syscall,--wrap=ioctl,--wrap=read,--wrap=close")
+        add_test(NAME pmu_failures COMMAND seal_pmu_failures)
+    endif()
+endif()

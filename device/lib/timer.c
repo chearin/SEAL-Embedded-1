@@ -323,7 +323,11 @@ Starts the timer (uses clock_gettime).
 */
 void start_timer(Timer *timer)
 {
+    #ifdef __linux__
+    if (clock_gettime(CLOCK_MONOTONIC_RAW, &timer->start) != 0) abort();
+#else
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &timer->start);
+#endif
 }
 
 /**
@@ -345,7 +349,11 @@ Stops the timer (uses clock_gettime). Should only be called after timer has been
 */
 void stop_timer(Timer *timer)
 {
+    #ifdef __linux__
+    if (clock_gettime(CLOCK_MONOTONIC_RAW, &timer->stop) != 0) abort();
+#else
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &timer->stop);
+#endif
     timer->elapsed_time += calc_elapsed_time(timer->start, timer->stop);
 }
 #endif

@@ -235,7 +235,12 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
                 end = rdtsc();
                 sum += (end - start);    
             }
+#ifdef __linux__
+            finish_rdtsc();
+            printf("ckks_encdode_encrypt_asym elapsed (%s): %llu\n\n", SE_RDTSC_UNIT, (unsigned long long)sum/1000);
+#else
             printf("ckks_encdode_encrypt_asym Cycles:)) %llu\n\n", (unsigned long long)sum/1000);
+#endif
             
             // print_poly_int64("conj_vals_int      ", conj_vals_int, n);
 
