@@ -1,7 +1,9 @@
-#include <stdlib.h>
+#pragma once
 
-static inline size_t getrandom(void* buf, size_t buflen, unsigned int flags) {
-    (void) flags;
-    arc4random_buf(buf, buflen);
-    return (size_t)buflen;
-}
+#include <stddef.h>
+#include <sys/types.h>
+
+/* Fill the entire buffer with system CSPRNG bytes. Only flags == 0 is supported.
+ * Success returns buflen; unrecoverable failure aborts, including Release builds.
+ * Linux short reads and EINTR are handled internally. */
+ssize_t se_getrandom(void *buf, size_t buflen, unsigned int flags);

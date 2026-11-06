@@ -17,10 +17,8 @@ Pseudo-random number generator.
 #include "inttypes.h"
 #include "shake256/fips202.h"
 
-#include "get_random.h"
-
 #ifdef SE_RAND_GETRANDOM
-#include <sys/random.h>  // getrandom
+#include "get_random.h"
 #elif defined(SE_RAND_NRF5)
 #include "nrf_crypto.h"
 #endif
@@ -51,7 +49,7 @@ inline void prng_randomize_reset(SE_PRNG *prng, uint8_t *seed_in)
     }
 
 #ifdef SE_RAND_GETRANDOM
-    ssize_t ret = getrandom((void *)(&(prng->seed[0])), SE_PRNG_SEED_BYTE_COUNT, 0);
+    ssize_t ret = se_getrandom((void *)(&(prng->seed[0])), SE_PRNG_SEED_BYTE_COUNT, 0);
     se_assert(ret == SE_PRNG_SEED_BYTE_COUNT);
 #elif defined(SE_RAND_NRF5)
     ret_code_t ret_val = nrf_crypto_rng_vector_generate(prng->seed, SE_PRNG_SEED_BYTE_COUNT);

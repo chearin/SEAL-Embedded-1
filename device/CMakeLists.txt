@@ -314,3 +314,13 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_definitions(-DSE_UNDEF_ASSERT_FORCE)
 endif()
+
+# Optional Linux platform regression tests.
+option(SE_BUILD_AUDIT_TESTS "Build platform regression tests" OFF)
+if(SE_BUILD_AUDIT_TESTS AND SE_BUILD_LOCAL AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    enable_testing()
+    add_executable(seal_platform_compat test/platform_compat_tests.c)
+    target_link_libraries(seal_platform_compat PRIVATE seal_embedded)
+    target_link_options(seal_platform_compat PRIVATE "-Wl,--wrap=getrandom")
+    add_test(NAME platform_compat COMMAND seal_platform_compat)
+endif()

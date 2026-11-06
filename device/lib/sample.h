@@ -19,7 +19,7 @@ distribution.
 #include "stdio.h"
 
 #ifdef SE_RAND_GETRANDOM
-#include <sys/random.h>  // getrandom
+#include "get_random.h"
 #elif defined(SE_RAND_NRF5)
 #include "nrf_crypto.h"
 #include "nrf_crypto_rng.h"
@@ -45,7 +45,7 @@ static inline ZZ random_zz(void)
 {
     ZZ result;
 #ifdef SE_RAND_GETRANDOM
-    ssize_t ret = getrandom((void *)&result, sizeof(result), 0);
+    ssize_t ret = se_getrandom((void *)&result, sizeof(result), 0);
     se_assert(ret == sizeof(result));
 #elif defined(SE_RAND_NRF5)
     ret_code_t ret_val = nrf_crypto_rng_vector_generate((uint8_t *)&result, sizeof(ZZ));
@@ -75,7 +75,7 @@ static inline uint8_t random_uint8(void)
 {
     uint8_t result;
 #ifdef SE_RAND_GETRANDOM
-    ssize_t ret = getrandom((void *)&result, sizeof(result), 0);
+    ssize_t ret = se_getrandom((void *)&result, sizeof(result), 0);
     se_assert(ret == sizeof(result));
 #elif defined(SE_RAND_NRF5)
     ret_code_t ret_val = nrf_crypto_rng_vector_generate(&result, 1);
@@ -103,7 +103,7 @@ static inline double random_double(void)
 {
     double result;
 #ifdef SE_RAND_GETRANDOM
-    ssize_t ret = getrandom((void *)&result, sizeof(result), 0);
+    ssize_t ret = se_getrandom((void *)&result, sizeof(result), 0);
     se_assert(ret == sizeof(result));
 #elif defined(SE_RAND_NRF5)
     ret_code_t ret_val = nrf_crypto_rng_vector_generate((uint8_t *)&result, sizeof(double));
