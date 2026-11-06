@@ -192,6 +192,7 @@ void ntt_non_lazy_inpl_test(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
 #endif
 
     ZZsign* signed_vec = calloc(n, sizeof(ZZsign));
+    if (!signed_vec) abort();
     for (size_t i = 0; i < n; i++)
     {
         signed_vec[i] = (ZZsign)vec[i];   //change montgomery domain
@@ -235,7 +236,7 @@ void ntt_non_lazy_inpl_test(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
         vec[i] = signed_vec[i];
         vec[i] %= (mod->value);
     }
-    
+    free(signed_vec);
 }
 
 void ntt_non_lazy_inpl_test_v1(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
@@ -253,10 +254,14 @@ void ntt_non_lazy_inpl_test_v1(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
 #endif
     //todo target하는 장치 => m4에서 돌리고싶다.
     //todo Cortex-M4 이런 장치에서는 malloc/calloc을 사용하지 않아.
-    size_t max_n = 16384;  // max coeff_count
+    /* All butterflies and normalization access only [0, n). The API
+     * supplies n input elements, not the maximum supported degree. */
+    se_assert(n >= 1024 && n <= 16384 && (n & (n - 1)) == 0);
+    se_assert(logn == get_log2(n));
+    size_t max_n = 16384;  // Preserve the original M1 scratch allocation.
     ZZsign signed_vec[max_n];
     ZZsign u, v;
-    for (size_t i = 0; i < max_n; i++)
+    for (size_t i = 0; i < n; i++)
     {
         signed_vec[i] = (ZZsign)vec[i];   //changes from unsigned to signed representation
     }
@@ -347,6 +352,8 @@ void cr_signed_ntt_lazy_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
 #endif
     // todo target하는 장치 => m4에서 돌리고싶다.
     // todo Cortex-M4 이런 장치에서는 malloc/calloc을 사용하지 않아.
+    se_assert(n >= 1024 && n <= 16384 && (n & (n - 1)) == 0);
+    se_assert(logn == get_log2(n));
     size_t max_n = 16384;  // max coeff_count
     ZZsign signed_vec[max_n];
     if ((parms->curr_modulus->value) < 0x20000000)  // 27-bit prime

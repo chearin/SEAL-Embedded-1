@@ -349,3 +349,11 @@ if(SE_BUILD_AUDIT_TESTS AND SE_BUILD_LOCAL AND CMAKE_SYSTEM_NAME STREQUAL "Linux
         add_test(NAME pmu_failures COMMAND seal_pmu_failures)
     endif()
 endif()
+
+if(SE_BUILD_AUDIT_TESTS AND SE_BUILD_LOCAL)
+    set(SE_AUDIT_DEGREE 4096 CACHE STRING "Correctness test degree")
+    enable_testing()
+    add_executable(seal_ntt_exact test/ntt_exact_tests.c)
+    target_link_libraries(seal_ntt_exact PRIVATE seal_embedded)
+    add_test(NAME ntt_exact COMMAND seal_ntt_exact ${SE_AUDIT_DEGREE})
+endif()
