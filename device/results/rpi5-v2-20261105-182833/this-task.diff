@@ -1,0 +1,91 @@
+--- before/device/lib/ntt.c
++++ after/device/lib/ntt.c
+@@ -443,6 +443,7 @@
+     }
+ }
+ 
++void cr_signed_ntt_lazy_inpl_v2(const Parms *, const ZZ *, ZZ *);
+ void ntt_inpl(const Parms *parms, const ZZ *ntt_roots, ZZ *vec)
+ {
+     se_assert(parms && parms->curr_modulus && vec);
+@@ -462,10 +463,11 @@
+         if (vec[i] >= q) vec[i] -= q;
+     }
+ #else
+-    ntt_non_lazy_inpl(parms, ntt_roots, vec);
++    // ntt_non_lazy_inpl(parms, ntt_roots, vec);
+     // ntt_non_lazy_inpl_test(parms, ntt_roots, vec);
+     // ntt_non_lazy_inpl_test_v1(parms, ntt_roots, vec);
+     // cr_signed_ntt_lazy_inpl(parms, ntt_roots, vec);
++    cr_signed_ntt_lazy_inpl_v2(parms, ntt_roots, vec);
+ #endif
+ }
+ 
+--- before/device/lib/CMakeLists.txt
++++ after/device/lib/CMakeLists.txt
+@@ -17,6 +17,7 @@
+ 	${CMAKE_CURRENT_LIST_DIR}/timer.c
+ 	${CMAKE_CURRENT_LIST_DIR}/uint_arith.c
+ 	${CMAKE_CURRENT_LIST_DIR}/ntt.c
++	${CMAKE_CURRENT_LIST_DIR}/ntt_signed_v2.c
+ 	${CMAKE_CURRENT_LIST_DIR}/intt.c
+ 	${CMAKE_CURRENT_LIST_DIR}/seal_embedded.c
+ )
+--- /dev/null
++++ device/lib/ntt_signed_v2.c
+@@ -0,0 +1,55 @@
++/* ARMv8-A signed lazy NTT: original butterfly and Montgomery convention. */
++#include "ntt.h"
++#include <stdint.h>
++
++void cr_signed_ntt_lazy_inpl(const Parms *, const ZZ *, ZZ *);
++
++static inline int32_t mont_mul_v2(int32_t a, int32_t b, int32_t q, uint32_t qinv)
++{
++    int64_t z, r;
++    int32_t k;
++    __asm (
++        "smull %x[z], %w[a], %w[b]\n\t"
++        "mul %w[k], %w[z], %w[qinv]\n\t"
++        "smaddl %x[r], %w[k], %w[q], %x[z]\n\t"
++        : [z] "=&r" (z), [k] "=&r" (k), [r] "=&r" (r)
++        : [a] "r" (a), [b] "r" (b), [q] "r" (q), [qinv] "r" (qinv));
++    return (int32_t)(r >> 32);
++}
++
++void cr_signed_ntt_lazy_inpl_v2(const Parms *parms, const ZZ *roots, ZZ *vec)
++{
++    se_assert(parms && parms->curr_modulus && vec);
++#ifdef SE_NTT_OTF
++    /* The original OTF branch has different twiddle-domain handling. */
++    cr_signed_ntt_lazy_inpl(parms, roots, vec);
++#else
++    const Modulus *mod = parms->curr_modulus;
++    if (mod->value >= 0x20000000) {
++        cr_signed_ntt_lazy_inpl(parms, roots, vec);
++        return;
++    }
++    const size_t n = parms->coeff_count, logn = parms->logn;
++    const int32_t q = (int32_t)mod->value;
++    const uint32_t qinv = mod->inv_q;
++    const int32_t r2 = (int32_t)mod->R2, r = (int32_t)mod->R;
++    int32_t *sv = (int32_t *)vec;
++    se_assert(roots && n >= 1024 && n <= 16384 && !(n & (n - 1)));
++    se_assert(logn == get_log2(n));
++    se_assert((uint64_t)(logn + 1) * (uint32_t)q < INT32_MAX);
++    for (size_t i = 0, h = 1, tt = n / 2; i < logn; ++i, h *= 2, tt /= 2) {
++        for (size_t j = 0, start = 0; j < h; ++j, start += 2 * tt) {
++            int32_t s = mont_mul_v2((int32_t)roots[h + j], r2, q, qinv);
++            for (size_t k = start; k < start + tt; ++k) {
++                int32_t u = sv[k], v = mont_mul_v2(sv[k + tt], s, q, qinv);
++                sv[k] = u + v;
++                sv[k + tt] = u - v;
++            }
++        }
++    }
++    for (size_t i = 0; i < n; ++i) {
++        int32_t x = mont_mul_v2(sv[i], r, q, qinv);
++        sv[i] = x + ((x >> 31) & q);
++    }
++#endif
++}

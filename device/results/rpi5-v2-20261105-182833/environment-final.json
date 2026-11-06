@@ -1,0 +1,38 @@
+{
+  "kernel": {
+    "command": [
+      "uname",
+      "-a"
+    ],
+    "returncode": 0,
+    "stdout": "Linux cselab 6.12.109+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.12.109-1+rpt1 (2026-09-11) aarch64 GNU/Linux\n",
+    "stderr": ""
+  },
+  "governor": {
+    "command": [
+      "cat",
+      "/sys/devices/system/cpu/cpu2/cpufreq/scaling_governor"
+    ],
+    "returncode": 0,
+    "stdout": "ondemand\n",
+    "stderr": ""
+  },
+  "paranoid": {
+    "command": [
+      "cat",
+      "/proc/sys/kernel/perf_event_paranoid"
+    ],
+    "returncode": 0,
+    "stdout": "2\n",
+    "stderr": ""
+  },
+  "throttled": {
+    "command": [
+      "vcgencmd",
+      "get_throttled"
+    ],
+    "returncode": 255,
+    "stdout": "Can't open device file: /dev/vcio\nTry creating a device file with: sudo mknod /dev/vcio c 100 0\n",
+    "stderr": ""
+  }
+}
