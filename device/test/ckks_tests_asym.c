@@ -20,6 +20,9 @@
 #include "test_common.h"
 #include "util_print.h"
 #include "m1cycles.h"
+#ifdef __linux__
+#include "ckks_repeat.h"
+#endif
 
 #if !((defined(SE_ON_SPHERE_M4) || defined(SE_ON_NRF5)) && defined(SE_ENCRYPT_TYPE_SYMMETRIC))
 /**
@@ -135,6 +138,11 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
     // -- If s is allocated space ahead of time, can load ahead of time too.
     // -- (If we are testing and sample s is set, this will also sample s)
     ckks_setup_s(&parms, NULL, &prng, s);
+#ifdef __linux__
+    /* One allocation per test; keep the original encryption buffer addresses. */
+    ZZ *saved_pk = malloc(2 * n * sizeof(ZZ));
+    if (!saved_pk) { fputs("public key snapshot allocation failed\n", stderr); abort(); }
+#endif
     size_t s_size = parms.small_s ? n / 16 : n;
     if (encode_only) clear(s, s_size);
 
@@ -172,6 +180,10 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
 #ifdef SE_DEBUG_NO_ERRORS
             memset(ep_small, 0, n * sizeof(int8_t));
 #else
+#ifdef __linux__
+            /* Loading s does not initialize prng. Use the normal OS-seeded path. */
+            prng_randomize_reset(&prng, NULL);
+#endif
             sample_poly_cbd_generic_prng_16(n, &prng, ep_small);
 #endif
             // print_poly_int8_full("ep_small", ep_small, n);
@@ -208,6 +220,10 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
             gen_pk(&parms, s, ntt_roots, NULL, &shareable_prng, ntt_s_save, ep_small, ntt_ep_save,
                    pk_c0, pk_c1);
             // printf("...done generating pk.\n");
+#ifdef __linux__
+            memcpy(saved_pk, pk_c0, n * sizeof(ZZ));
+            memcpy(saved_pk + n, pk_c1, n * sizeof(ZZ));
+#endif
 
             // -- Debugging
             // print_poly("pk0 ", pk_c0, n);
@@ -220,15 +236,33 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
             // ! performance
             long long sum = 0;
             long long start = 0, end = 0;
+#ifdef __linux__
+            ckks_restore_public_key(n, saved_pk, pk_c0, pk_c1);
+#endif
             ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
+#ifdef __linux__
+            ckks_restore_public_key(n, saved_pk, pk_c0, pk_c1);
+#endif
             ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
+#ifdef __linux__
+            ckks_restore_public_key(n, saved_pk, pk_c0, pk_c1);
+#endif
             ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
+#ifdef __linux__
+            ckks_restore_public_key(n, saved_pk, pk_c0, pk_c1);
+#endif
             ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
+#ifdef __linux__
+            ckks_restore_public_key(n, saved_pk, pk_c0, pk_c1);
+#endif
             ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte, ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
 
             setup_rdtsc();
             for(int j = 0; j < 1000; j++)
             {
+#ifdef __linux__
+                ckks_restore_public_key(n, saved_pk, pk_c0, pk_c1);
+#endif
                 start = rdtsc();
                 ckks_encode_encrypt_asym(&parms, conj_vals_int, u, e1, ntt_roots, ntt_u_e1_pte,
                                      ntt_u_save, ntt_e1_save, pk_c0, pk_c1);
@@ -367,6 +401,9 @@ void test_ckks_asym_base(size_t n, size_t nprimes, bool test_message)
     }
     //clang-format on
 #endif
+#endif
+#ifdef __linux__
+    free(saved_pk);
 #endif
     delete_parameters(&parms);
 }
